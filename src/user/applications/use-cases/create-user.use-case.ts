@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import EncryptUtils from '@src/shared/applications/utils/encrypt.utils';
 import {
   CREATE_USER_REPOSITORY,
   type CreateUserRepositoryInterface,
@@ -12,9 +13,15 @@ export class CreateUserUseCase implements CreateUserUseCaseInterface {
   constructor(
     @Inject(CREATE_USER_REPOSITORY)
     private readonly createUserRepository: CreateUserRepositoryInterface,
+    private readonly encryptUtils: EncryptUtils,
   ) {}
 
   async execute(data: User): Promise<UserRecord> {
-    return this.createUserRepository.create(data);
+    const password = await this.encryptUtils.encryptPassword(data.password);
+
+    return this.createUserRepository.create({
+      ...data,
+      password,
+    });
   }
 }

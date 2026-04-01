@@ -1,3 +1,4 @@
+import EncryptUtils from '@src/shared/applications/utils/encrypt.utils';
 import { UserRepository } from '@src/user/adapters/repositories/user.repository';
 import { CreateUserUseCase } from '@src/user/applications/use-cases/create-user.use-case';
 import { DeleteUserUseCase } from '@src/user/applications/use-cases/delete-user.use-case';
@@ -16,6 +17,7 @@ import { LIST_USERS_USE_CASE } from '@src/user/applications/contracts/list-users
 import { UPDATE_USER_USE_CASE } from '@src/user/applications/contracts/update-user.use-case-interface';
 
 export const userProviders = [
+  EncryptUtils,
   {
     provide: LIST_USERS_REPOSITORY,
     useClass: UserRepository,
