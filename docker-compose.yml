@@ -1,0 +1,37 @@
+services:
+  database:
+    networks:
+      - identity
+    container_name: identity-mongodb
+    image: mongo:latest
+    env_file:
+      - .env
+    restart: unless-stopped
+    volumes:
+      - ./.mongodb:/data/db
+    ports:
+      - ${DATABASE_PORT}:27017
+
+  api:
+    depends_on:
+      - database
+    networks:
+      - identity
+    container_name: identity-api
+    build:
+      context: .
+    image: api
+    env_file:
+      - .env
+    environment:
+      APPLICATION_PORT: 3000
+    restart: always
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    ports:
+      - ${APPLICATION_PORT}:3000
+
+networks:
+  identity:
+    driver: bridge
