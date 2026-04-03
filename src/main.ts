@@ -28,8 +28,8 @@ async function bootstrap() {
   app.enableCors();
   app.useGlobalPipes(new ValidationPipe());
   const configService = app.get<ConfigService>(ConfigService);
-  const port = configService.get<number>('api.port', 3001);
-  await app.listen(port ?? 3001);
+  const port = configService.get<number>('api.port', 3000);
+  await app.listen(port ?? 3000);
   Logger.log(`Server running on http://localhost:${port}/`, 'NestBootstrap');
 }
 
