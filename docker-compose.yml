@@ -8,9 +8,10 @@ services:
       - .env
     restart: unless-stopped
     volumes:
-      - ./.mongodb:/data/db
+      - ./.mongodb-identity:/data/db
     ports:
-      - ${DATABASE_PORT}:27017
+      - ${DATABASE_PORT}:27019
+    command: ["mongod", "--port", "27019"]
 
   api:
     depends_on:
@@ -24,13 +25,13 @@ services:
     env_file:
       - .env
     environment:
-      APPLICATION_PORT: 3000
+      APPLICATION_PORT: 3002
     restart: always
     volumes:
       - ./:/app
       - /app/node_modules
     ports:
-      - ${APPLICATION_PORT}:3000
+      - ${APPLICATION_PORT}:3002
 
 networks:
   identity:
