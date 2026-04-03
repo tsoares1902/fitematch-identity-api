@@ -14,10 +14,9 @@ import { UserStatusEnum } from '@src/user/applications/contracts/user-status.enu
 
 export class CreateUserDto {
   @ApiProperty({
-    example: UserRoleEnum.USER,
+    example: UserRoleEnum.CANDIDATE,
     enum: UserRoleEnum,
     required: false,
-    default: UserRoleEnum.USER,
   })
   @IsOptional()
   @IsEnum(UserRoleEnum)

@@ -11,7 +11,7 @@ import { UserRoleEnum } from '@src/user/applications/contracts/user-role.enum';
 import { UserStatusEnum } from '@src/user/applications/contracts/user-status.enum';
 
 export class UpdateUserDto {
-  @ApiPropertyOptional({ example: UserRoleEnum.USER, enum: UserRoleEnum })
+  @ApiPropertyOptional({ example: UserRoleEnum.CANDIDATE, enum: UserRoleEnum })
   @IsOptional()
   @IsEnum(UserRoleEnum)
   role?: UserRoleEnum;

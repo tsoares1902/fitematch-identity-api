@@ -43,7 +43,7 @@ export class CreateUserController {
   @Post()
   async create(@Body() data: CreateUserDto): Promise<UserRecord> {
     return this.createUserUseCase.execute({
-      role: data.role ?? UserRoleEnum.USER,
+      role: data.role ?? UserRoleEnum.CANDIDATE,
       username: data.username,
       firstName: data.firstName,
       lastName: data.lastName,

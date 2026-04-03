@@ -14,7 +14,7 @@ export class UserEntity {
     required: true,
     enum: UserRoleEnum,
     type: String,
-    default: UserRoleEnum.USER,
+    default: UserRoleEnum.CANDIDATE,
   })
   role!: UserRoleEnum;
 
@@ -32,6 +32,9 @@ export class UserEntity {
 
   @Prop({ required: true, trim: true })
   password!: string;
+
+  @Prop({ required: true, default: 0, min: 0 })
+  tokenVersion!: number;
 
   @Prop({ required: true })
   birthday!: string;

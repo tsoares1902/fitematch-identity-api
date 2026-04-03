@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { UserModule } from '@src/user/user.module';
-import apiConfig from '@src/config/api.config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { HealthCheckModule } from './health-check/health-check.module';
+import apiConfig from '@src/config/api.config';
+import { ConfigModule } from '@nestjs/config';
+import { HealthCheckModule } from '@src/health-check/health-check.module';
+import { UserModule } from '@src/user/user.module';
+import { AuthModule } from '@src/auth/auth.module';
+
+const importedModules = [HealthCheckModule, UserModule, AuthModule];
 
 const databaseUri = process.env.DATABASE_URI;
 @Module({
@@ -19,8 +22,7 @@ const databaseUri = process.env.DATABASE_URI;
           }),
         ]
       : []),
-    UserModule,
-    HealthCheckModule,
+    ...importedModules,
   ],
   controllers: [],
   providers: [],

@@ -33,7 +33,7 @@ export class ListUsersQueryDto {
   @IsString()
   id?: string;
 
-  @ApiPropertyOptional({ example: UserRoleEnum.USER, enum: UserRoleEnum })
+  @ApiPropertyOptional({ example: UserRoleEnum.CANDIDATE, enum: UserRoleEnum })
   @IsOptional()
   @IsEnum(UserRoleEnum)
   role?: UserRoleEnum;
