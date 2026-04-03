@@ -40,8 +40,5 @@ export class CreateSessionDto {
   startedAt!: Date;
 
   @ApiPropertyOptional()
-  endedAt?: Date;
-
-  @ApiPropertyOptional()
   updatedAt?: Date;
 }

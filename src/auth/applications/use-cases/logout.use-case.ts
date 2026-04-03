@@ -25,7 +25,7 @@ export class LogoutUseCase implements LogoutUseCaseInterface {
   ) {}
 
   async execute(data: LogoutRequest): Promise<LogoutResponse> {
-    const endedAt = new Date();
+    const updatedAt = new Date();
     const token = this.extractBearerToken(data.authorization);
     const payload = await this.verifyToken(token);
     const user = await this.loginRepository.findById(payload.sub);
@@ -45,7 +45,7 @@ export class LogoutUseCase implements LogoutUseCaseInterface {
     const sessionWasClosed = await this.loginRepository.deactivateSession(
       user.id,
       payload.sessionId,
-      endedAt,
+      updatedAt,
     );
 
     if (!sessionWasClosed) {

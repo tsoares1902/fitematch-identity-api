@@ -40,8 +40,5 @@ export class SessionResponseDto {
   startedAt!: Date;
 
   @ApiPropertyOptional()
-  endedAt?: Date;
-
-  @ApiPropertyOptional()
   updatedAt?: Date;
 }

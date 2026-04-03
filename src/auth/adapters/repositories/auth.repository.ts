@@ -95,7 +95,6 @@ export class AuthRepository
         {
           $set: {
             active: false,
-            endedAt: updatedAt,
             updatedAt,
           },
         },
@@ -121,7 +120,6 @@ export class AuthRepository
       active: session.active,
       createdAt: session.createdAt,
       startedAt: session.startedAt,
-      endedAt: session.endedAt,
       updatedAt: session.updatedAt,
     }));
   }

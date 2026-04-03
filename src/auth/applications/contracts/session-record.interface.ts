@@ -7,6 +7,5 @@ export interface SessionRecordResponse {
   active: boolean;
   createdAt: Date;
   startedAt: Date;
-  endedAt?: Date;
   updatedAt?: Date;
 }

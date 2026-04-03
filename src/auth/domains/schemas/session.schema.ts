@@ -50,9 +50,6 @@ export class SessionEntity {
   startedAt!: Date;
 
   @Prop()
-  endedAt?: Date;
-
-  @Prop()
   updatedAt?: Date;
 }
 
