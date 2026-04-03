@@ -1,8 +1,8 @@
 services:
   database:
     networks:
-      - identity
-    container_name: identity-mongodb
+      - fitematch
+    container_name: fitematch-identity-database
     image: mongo:latest
     env_file:
       - .env
@@ -17,8 +17,8 @@ services:
     depends_on:
       - database
     networks:
-      - identity
-    container_name: identity-api
+      - fitematch
+    container_name: fitematch-identity-api
     build:
       context: .
     image: api
@@ -32,5 +32,5 @@ services:
       - ${APPLICATION_BIND_PORT}:3000
 
 networks:
-  identity:
+  fitematch:
     driver: bridge
