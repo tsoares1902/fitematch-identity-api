@@ -7,9 +7,9 @@ import {
   MaxLength,
 } from 'class-validator';
 import {
-  type ListUsersSortField,
-  type ListUsersSortOrder,
-} from '@src/user/applications/contracts/list-users-filters.interface';
+  type ListUserSortField,
+  type ListUserSortOrder,
+} from '@src/user/applications/contracts/list-user.request.interface';
 import { UserRoleEnum } from '@src/user/applications/contracts/user-role.enum';
 import { UserStatusEnum } from '@src/user/applications/contracts/user-status.enum';
 
@@ -76,7 +76,7 @@ export class ListUsersQueryDto {
   })
   @IsOptional()
   @IsEnum(ListUsersSortFieldEnum)
-  sortBy?: ListUsersSortField;
+  sortBy?: ListUserSortField;
 
   @ApiPropertyOptional({
     example: ListUsersSortOrderEnum.DESC,
@@ -84,5 +84,5 @@ export class ListUsersQueryDto {
   })
   @IsOptional()
   @IsEnum(ListUsersSortOrderEnum)
-  sortOrder?: ListUsersSortOrder;
+  sortOrder?: ListUserSortOrder;
 }

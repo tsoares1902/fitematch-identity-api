@@ -8,17 +8,17 @@ import {
 } from '@nestjs/swagger';
 import { UserResponseDto } from '@src/user/adapters/dto/responses/user.response.dto';
 import {
-  GET_USER_BY_ID_USE_CASE,
-  type GetUserByIdUseCaseInterface,
-} from '@src/user/applications/contracts/get-user-by-id.use-case-interface';
+  READ_USER_USE_CASE,
+  type ReadUserUseCaseInterface,
+} from '@src/user/applications/contracts/read-user.use-case-interface';
 import type { UserRecord } from '@src/user/applications/contracts/user-record.interface';
 
 @ApiTags('User')
 @Controller('user')
-export class GetUserByIdController {
+export class ReadUserController {
   constructor(
-    @Inject(GET_USER_BY_ID_USE_CASE)
-    private readonly getUserByIdUseCase: GetUserByIdUseCaseInterface,
+    @Inject(READ_USER_USE_CASE)
+    private readonly getUserByIdUseCase: ReadUserUseCaseInterface,
   ) {}
 
   @ApiOperation({

@@ -11,16 +11,22 @@ import {
 } from 'class-validator';
 import { UserRoleEnum } from '@src/user/applications/contracts/user-role.enum';
 import { UserStatusEnum } from '@src/user/applications/contracts/user-status.enum';
+import * as userInterface from '@src/user/applications/contracts/user.interface';
+import { Type } from 'class-transformer';
 
 export class CreateUserDto {
   @ApiProperty({
-    example: UserRoleEnum.CANDIDATE,
+    example: UserRoleEnum.CANDIDATE || UserRoleEnum.RECRUITER,
     enum: UserRoleEnum,
-    required: false,
+    required: true,
   })
-  @IsOptional()
+  @IsNotEmpty()
   @IsEnum(UserRoleEnum)
-  role?: UserRoleEnum;
+  role!: UserRoleEnum;
+
+  @ApiProperty({ example: false, required: false, default: false })
+  @IsOptional()
+  isPaidMembership?: boolean;
 
   @ApiProperty({ example: 'johndoe', minLength: 2, maxLength: 64 })
   @IsString()
@@ -70,4 +76,33 @@ export class CreateUserDto {
   @IsOptional()
   @IsEnum(UserStatusEnum)
   status?: UserStatusEnum;
+  @ApiProperty({
+    required: false,
+    type: Object,
+    description: 'Documentos do usuário',
+    example: { identityDocument: '', socialDocument: '', otherDocumentt: '' },
+  })
+  @IsOptional()
+  @Type(() => Object)
+  documents?: userInterface.UserDocuments;
+
+  @ApiProperty({
+    required: false,
+    type: Object,
+    description: 'Detalhes de contato',
+    example: { phone: '', city: '', state: '' },
+  })
+  @IsOptional()
+  @Type(() => Object)
+  details?: userInterface.ContactDetails;
+
+  @ApiProperty({
+    required: false,
+    type: Object,
+    description: 'Redes sociais',
+    example: { facebook: '', instagram: '' },
+  })
+  @IsOptional()
+  @Type(() => Object)
+  social?: userInterface.SocialMedias;
 }

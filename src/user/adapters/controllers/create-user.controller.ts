@@ -12,10 +12,8 @@ import { UserResponseDto } from '@src/user/adapters/dto/responses/user.response.
 import {
   CREATE_USER_USE_CASE,
   type CreateUserUseCaseInterface,
+  type ResultCreateUserUseCaseInterface,
 } from '@src/user/applications/contracts/create-user.use-case-interface';
-import { UserRoleEnum } from '@src/user/applications/contracts/user-role.enum';
-import type { UserRecord } from '@src/user/applications/contracts/user-record.interface';
-import { UserStatusEnum } from '@src/user/applications/contracts/user-status.enum';
 
 @ApiTags('User')
 @Controller('user')
@@ -41,16 +39,9 @@ export class CreateUserController {
     description: 'username or email already exists.',
   })
   @Post()
-  async create(@Body() data: CreateUserDto): Promise<UserRecord> {
-    return this.createUserUseCase.execute({
-      role: data.role ?? UserRoleEnum.CANDIDATE,
-      username: data.username,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      email: data.email,
-      password: data.password,
-      birthday: data.birthday,
-      status: data.status ?? UserStatusEnum.PENDING,
-    });
+  async create(
+    @Body() data: CreateUserDto,
+  ): Promise<ResultCreateUserUseCaseInterface> {
+    return this.createUserUseCase.execute(data);
   }
 }

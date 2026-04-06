@@ -4,22 +4,24 @@ import type { CreateUserRepositoryInterface } from '@src/user/applications/contr
 import type { DeleteUserRepositoryInterface } from '@src/user/applications/contracts/delete-user.repository-interface';
 import type { User } from '@src/user/applications/contracts/user.interface';
 import type { UserRecord } from '@src/user/applications/contracts/user-record.interface';
-import type { GetUserByIdRepositoryInterface } from '@src/user/applications/contracts/get-user-by-id.repository-interface';
-import type { ListUsersFilters } from '@src/user/applications/contracts/list-users-filters.interface';
-import type { ListUsersRepositoryInterface } from '@src/user/applications/contracts/list-users.repository-interface';
+import type { ReadUserRepositoryInterface } from '@src/user/applications/contracts/read-user.repository-interface';
+import type { ListUserRepositoryInterface } from '@src/user/applications/contracts/list-user.repository-interface';
+import type { ListUserRequestInterface } from '@src/user/applications/contracts/list-user.request.interface';
 import type { UpdateUserRepositoryInterface } from '@src/user/applications/contracts/update-user.repository-interface';
+import type { UpdateUserDataUseCaseInterface } from '@src/user/applications/contracts/update-user.use-case-interface';
 import {
   UserEntity,
   type UserDocument,
 } from '@src/user/domains/schemas/user.schema';
+import MasksUtils from '@src/shared/applications/utils/masks.utils';
 import { isValidObjectId, Model, type SortOrder } from 'mongoose';
 
 @Injectable()
 export class UserRepository
   implements
+    ListUserRepositoryInterface,
     CreateUserRepositoryInterface,
-    ListUsersRepositoryInterface,
-    GetUserByIdRepositoryInterface,
+    ReadUserRepositoryInterface,
     UpdateUserRepositoryInterface,
     DeleteUserRepositoryInterface
 {
@@ -28,7 +30,7 @@ export class UserRepository
     private readonly userModel: Model<UserDocument>,
   ) {}
 
-  async create(data: User): Promise<UserRecord> {
+  async createUser(data: User): Promise<UserRecord> {
     try {
       const user = await this.userModel.create(data);
 
@@ -39,10 +41,11 @@ export class UserRepository
     }
   }
 
-  async list(filters: ListUsersFilters): Promise<UserRecord[]> {
-    const query = this.buildListQuery(filters);
-    const sort = this.buildListSort(filters);
-    const users = await this.userModel.find(query).sort(sort).exec();
+  async list(filters: ListUserRequestInterface): Promise<UserRecord[]> {
+    const users = await this.userModel
+      .find(this.buildListQuery(filters))
+      .sort(this.buildListSort(filters))
+      .exec();
 
     return users.map((user) => this.toRecord(user));
   }
@@ -52,7 +55,10 @@ export class UserRepository
     return user ? this.toRecord(user) : null;
   }
 
-  async update(id: string, data: Partial<User>): Promise<UserRecord | null> {
+  async update(
+    id: string,
+    data: UpdateUserDataUseCaseInterface,
+  ): Promise<UserRecord | null> {
     try {
       const user = await this.userModel
         .findByIdAndUpdate(id, data, { new: true, runValidators: true })
@@ -70,7 +76,9 @@ export class UserRepository
     return Boolean(result);
   }
 
-  private buildListQuery(filters: ListUsersFilters): Record<string, unknown> {
+  private buildListQuery(
+    filters: ListUserRequestInterface,
+  ): Record<string, unknown> {
     const query: Record<string, unknown> = {};
 
     if (filters.id !== undefined) {
@@ -108,7 +116,9 @@ export class UserRepository
     return query;
   }
 
-  private buildListSort(filters: ListUsersFilters): Record<string, SortOrder> {
+  private buildListSort(
+    filters: ListUserRequestInterface,
+  ): Record<string, SortOrder> {
     const sortField = filters.sortBy ?? 'createdAt';
     const sortOrder: SortOrder = filters.sortOrder === 'asc' ? 1 : -1;
 
@@ -144,15 +154,32 @@ export class UserRepository
   }
 
   private toRecord(document: UserDocument): UserRecord {
+    // Clone para não modificar o original
+    const documents = { ...(document.documents ?? {}) };
+    if (documents.identityDocument)
+      documents.identityDocument = MasksUtils.applyBrazilianPersonIdentityDocumentMask(documents.identityDocument);
+    if (documents.socialDocument)
+      documents.socialDocument = MasksUtils.applyBrazilianPersonSocialDocumentMask(documents.socialDocument);
+
+    const details = { ...(document.details ?? {}) };
+    if (details.phone)
+      details.phone = MasksUtils.applyBrazilianPhoneMask(details.phone);
+    if (details.zipCode)
+      details.zipCode = MasksUtils.applyBrazilianZipCodeMask(details.zipCode);
+
     return {
       id: document._id.toString(),
       role: document.role,
+      isPaidMembership: document.isPaidMembership,
       username: document.username,
       firstName: document.firstName,
       lastName: document.lastName,
       email: document.email,
       status: document.status,
       birthday: document.birthday,
+      documents,
+      details,
+      social: document.social ?? {},
       createdAt: document.createdAt,
       updatedAt: document.updatedAt,
     };

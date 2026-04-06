@@ -9,6 +9,8 @@ import {
 } from 'class-validator';
 import { UserRoleEnum } from '@src/user/applications/contracts/user-role.enum';
 import { UserStatusEnum } from '@src/user/applications/contracts/user-status.enum';
+import * as userInterface from '@src/user/applications/contracts/user.interface';
+import { Type } from 'class-transformer';
 
 export class UpdateUserDto {
   @ApiPropertyOptional({ example: UserRoleEnum.CANDIDATE, enum: UserRoleEnum })
@@ -49,6 +51,33 @@ export class UpdateUserDto {
   @IsString()
   @Length(8, 255)
   password?: string;
+
+  @ApiPropertyOptional({
+    type: Object,
+    description: 'Documentos do usuário',
+    example: { identityDocument: '', socialDocument: '', otherDocumentt: '' },
+  })
+  @IsOptional()
+  @Type(() => Object)
+  documents?: userInterface.UserDocuments;
+
+  @ApiPropertyOptional({
+    type: Object,
+    description: 'Detalhes de contato',
+    example: { phone: '', city: '', state: '' },
+  })
+  @IsOptional()
+  @Type(() => Object)
+  details?: userInterface.ContactDetails;
+
+  @ApiPropertyOptional({
+    type: Object,
+    description: 'Redes sociais',
+    example: { facebook: '', instagram: '' },
+  })
+  @IsOptional()
+  @Type(() => Object)
+  social?: userInterface.SocialMedias;
 
   @ApiPropertyOptional({
     example: UserStatusEnum.ENABLED,

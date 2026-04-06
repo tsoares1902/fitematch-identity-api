@@ -38,6 +38,7 @@ export class AuthRepository
     return {
       id: user._id.toString(),
       role: user.role,
+      isPaidMembership: user.isPaidMembership,
       username: user.username,
       firstName: user.firstName,
       lastName: user.lastName,
@@ -61,6 +62,7 @@ export class AuthRepository
     return {
       id: user._id.toString(),
       role: user.role,
+      isPaidMembership: user.isPaidMembership,
       username: user.username,
       firstName: user.firstName,
       lastName: user.lastName,

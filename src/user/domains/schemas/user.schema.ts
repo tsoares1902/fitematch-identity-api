@@ -10,6 +10,9 @@ export type UserDocument = HydratedDocument<UserEntity>;
   timestamps: true,
 })
 export class UserEntity {
+  @Prop({ required: true, default: false })
+  isPaidMembership!: boolean;
+
   @Prop({
     required: true,
     enum: UserRoleEnum,
@@ -38,6 +41,15 @@ export class UserEntity {
 
   @Prop({ required: true })
   birthday!: string;
+
+  @Prop({ required: false, type: Object, default: {} })
+  documents?: Record<string, any>;
+
+  @Prop({ required: false, type: Object, default: {} })
+  details?: Record<string, any>;
+
+  @Prop({ required: false, type: Object, default: {} })
+  social?: Record<string, any>;
 
   @Prop({
     required: true,
