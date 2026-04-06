@@ -61,7 +61,10 @@ export class UserRepository
   ): Promise<UserRecord | null> {
     try {
       const user = await this.userModel
-        .findByIdAndUpdate(id, data, { new: true, runValidators: true })
+        .findByIdAndUpdate(id, data, {
+          returnDocument: 'after',
+          runValidators: true,
+        })
         .exec();
 
       return user ? this.toRecord(user) : null;

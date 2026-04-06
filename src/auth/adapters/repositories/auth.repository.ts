@@ -101,7 +101,7 @@ export class AuthRepository
           },
         },
         {
-          new: true,
+          returnDocument: 'after',
         },
       )
       .exec();
