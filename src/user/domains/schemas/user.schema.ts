@@ -21,9 +21,6 @@ export class UserEntity {
   })
   role!: UserRoleEnum;
 
-  @Prop({ required: true, trim: true, unique: true })
-  username!: string;
-
   @Prop({ required: true, trim: true })
   firstName!: string;
 

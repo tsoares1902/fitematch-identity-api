@@ -5,15 +5,17 @@ import type { DeleteUserRepositoryInterface } from '@src/user/applications/contr
 import type { User } from '@src/user/applications/contracts/user.interface';
 import type { UserRecord } from '@src/user/applications/contracts/user-record.interface';
 import type { ReadUserRepositoryInterface } from '@src/user/applications/contracts/read-user.repository-interface';
-import type { ListUserRepositoryInterface } from '@src/user/applications/contracts/list-user.repository-interface';
-import type { ListUserRequestInterface } from '@src/user/applications/contracts/list-user.request.interface';
+import {
+  type ListUserRepositoryInterface,
+  type ListUserRepositoryResultInterface,
+} from '@src/user/applications/contracts/list-user.repository-interface';
+import type { ListUsersQueryInterface } from '@src/user/applications/contracts/list-user-query.interface';
 import type { UpdateUserRepositoryInterface } from '@src/user/applications/contracts/update-user.repository-interface';
 import type { UpdateUserDataUseCaseInterface } from '@src/user/applications/contracts/update-user.use-case-interface';
 import {
   UserEntity,
   type UserDocument,
 } from '@src/user/domains/schemas/user.schema';
-import MasksUtils from '@src/shared/applications/utils/masks.utils';
 import { isValidObjectId, Model, type SortOrder } from 'mongoose';
 
 @Injectable()
@@ -41,13 +43,30 @@ export class UserRepository
     }
   }
 
-  async list(filters: ListUserRequestInterface): Promise<UserRecord[]> {
-    const users = await this.userModel
-      .find(this.buildListQuery(filters))
-      .sort(this.buildListSort(filters))
-      .exec();
+  async list(
+    filters: ListUsersQueryInterface,
+  ): Promise<ListUserRepositoryResultInterface> {
+    const page = Number(filters.page ?? 1);
+    const limit = Number(filters.limit ?? 10);
+    const skip = (page - 1) * limit;
+    const query = this.buildListQuery(filters);
 
-    return users.map((user) => this.toRecord(user));
+    const [users, totalItems] = await Promise.all([
+      this.userModel
+        .find(query)
+        .sort(this.buildListSort(filters))
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      this.userModel.countDocuments(query).exec(),
+    ]);
+
+    return {
+      data: users.map((user) => this.toRecord(user)),
+      totalItems,
+      currentPage: page,
+      itemsPerPage: limit,
+    };
   }
 
   async findById(id: string): Promise<UserRecord | null> {
@@ -80,7 +99,7 @@ export class UserRepository
   }
 
   private buildListQuery(
-    filters: ListUserRequestInterface,
+    filters: ListUsersQueryInterface,
   ): Record<string, unknown> {
     const query: Record<string, unknown> = {};
 
@@ -93,12 +112,7 @@ export class UserRepository
       query._id = filters.id;
     }
 
-    const searchableFields = [
-      'username',
-      'firstName',
-      'lastName',
-      'email',
-    ] as const;
+    const searchableFields = ['firstName', 'lastName', 'email'] as const;
 
     for (const field of searchableFields) {
       const value = filters[field];
@@ -120,7 +134,7 @@ export class UserRepository
   }
 
   private buildListSort(
-    filters: ListUserRequestInterface,
+    filters: ListUsersQueryInterface,
   ): Record<string, SortOrder> {
     const sortField = filters.sortBy ?? 'createdAt';
     const sortOrder: SortOrder = filters.sortOrder === 'asc' ? 1 : -1;
@@ -145,10 +159,6 @@ export class UserRepository
         ? Object.keys(error.keyPattern)
         : [];
 
-    if (duplicatedFields.includes('username')) {
-      throw new ConflictException('username already exists');
-    }
-
     if (duplicatedFields.includes('email')) {
       throw new ConflictException('email already exists');
     }
@@ -157,31 +167,17 @@ export class UserRepository
   }
 
   private toRecord(document: UserDocument): UserRecord {
-    // Clone para não modificar o original
-    const documents = { ...(document.documents ?? {}) };
-    if (documents.identityDocument)
-      documents.identityDocument = MasksUtils.applyBrazilianPersonIdentityDocumentMask(documents.identityDocument);
-    if (documents.socialDocument)
-      documents.socialDocument = MasksUtils.applyBrazilianPersonSocialDocumentMask(documents.socialDocument);
-
-    const details = { ...(document.details ?? {}) };
-    if (details.phone)
-      details.phone = MasksUtils.applyBrazilianPhoneMask(details.phone);
-    if (details.zipCode)
-      details.zipCode = MasksUtils.applyBrazilianZipCodeMask(details.zipCode);
-
     return {
       id: document._id.toString(),
       role: document.role,
       isPaidMembership: document.isPaidMembership,
-      username: document.username,
       firstName: document.firstName,
       lastName: document.lastName,
       email: document.email,
       status: document.status,
       birthday: document.birthday,
-      documents,
-      details,
+      documents: document.documents ?? {},
+      details: document.details ?? {},
       social: document.social ?? {},
       createdAt: document.createdAt,
       updatedAt: document.updatedAt,

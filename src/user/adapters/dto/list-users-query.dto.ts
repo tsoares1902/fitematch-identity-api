@@ -1,20 +1,21 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsInt,
   IsEmail,
   IsEnum,
   IsOptional,
   IsString,
   MaxLength,
+  Min,
 } from 'class-validator';
 import {
   type ListUserSortField,
   type ListUserSortOrder,
-} from '@src/user/applications/contracts/list-user.request.interface';
+} from '@src/user/applications/contracts/list-user-query.interface';
 import { UserRoleEnum } from '@src/user/applications/contracts/user-role.enum';
 import { UserStatusEnum } from '@src/user/applications/contracts/user-status.enum';
 
 enum ListUsersSortFieldEnum {
-  USERNAME = 'username',
   FIRST_NAME = 'firstName',
   LAST_NAME = 'lastName',
   EMAIL = 'email',
@@ -28,6 +29,18 @@ enum ListUsersSortOrderEnum {
 }
 
 export class ListUsersQueryDto {
+  @ApiPropertyOptional({ example: 1, minimum: 1 })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @ApiPropertyOptional({ example: 10, minimum: 1 })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  limit?: number;
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -37,12 +50,6 @@ export class ListUsersQueryDto {
   @IsOptional()
   @IsEnum(UserRoleEnum)
   role?: UserRoleEnum;
-
-  @ApiPropertyOptional({ example: 'johndoe', maxLength: 255 })
-  @IsOptional()
-  @IsString()
-  @MaxLength(255)
-  username?: string;
 
   @ApiPropertyOptional({ example: 'John', maxLength: 255 })
   @IsOptional()

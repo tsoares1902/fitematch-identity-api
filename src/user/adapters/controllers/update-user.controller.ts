@@ -9,13 +9,13 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
-import { UserResponseDto } from '@src/user/adapters/dto/responses/user.response.dto';
 import { UpdateUserDto } from '@src/user/adapters/dto/update-user.dto';
 import {
   UPDATE_USER_USE_CASE,
   type UpdateUserUseCaseInterface,
 } from '@src/user/applications/contracts/update-user.use-case-interface';
-import type { UserRecord } from '@src/user/applications/contracts/user-record.interface';
+import { ResponseUpdateUserDTO } from '../dto/responses/update-user-response.dto';
+import UpdateUserResponse from './responses/update-user.respomse';
 
 @ApiTags('User')
 @Controller('user')
@@ -23,6 +23,7 @@ export class UpdateUserController {
   constructor(
     @Inject(UPDATE_USER_USE_CASE)
     private readonly updateUserUseCase: UpdateUserUseCaseInterface,
+    private readonly updateUserResponse: UpdateUserResponse,
   ) {}
 
   @ApiOperation({
@@ -33,13 +34,13 @@ export class UpdateUserController {
   @ApiBody({ type: UpdateUserDto })
   @ApiOkResponse({
     description: 'User updated successfully.',
-    type: UserResponseDto,
+    type: ResponseUpdateUserDTO,
   })
   @ApiBadRequestResponse({
     description: 'Validation error in the submitted data.',
   })
   @ApiConflictResponse({
-    description: 'username or email already exists.',
+    description: 'email already exists.',
   })
   @ApiNotFoundResponse({
     description: 'User not found.',
@@ -48,7 +49,13 @@ export class UpdateUserController {
   async update(
     @Param('id') id: string,
     @Body() data: UpdateUserDto,
-  ): Promise<UserRecord> {
-    return this.updateUserUseCase.execute(id, data);
+  ): Promise<ResponseUpdateUserDTO> {
+    try {
+      const result = await this.updateUserUseCase.execute(id, data);
+
+      return this.updateUserResponse.response(result);
+    } catch (error: unknown) {
+      this.updateUserResponse.catch(error);
+    }
   }
 }

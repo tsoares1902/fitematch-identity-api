@@ -7,7 +7,7 @@ import type {
   UpdateUserDataUseCaseInterface,
   UpdateUserUseCaseInterface,
 } from '@src/user/applications/contracts/update-user.use-case-interface';
-import type { UserRecord } from '@src/user/applications/contracts/user-record.interface';
+import type { ResultUpdateUserUseCaseInterface } from '@src/user/applications/contracts/result-update-user.use-case.interface';
 
 @Injectable()
 export class UpdateUserUseCase implements UpdateUserUseCaseInterface {
@@ -19,13 +19,13 @@ export class UpdateUserUseCase implements UpdateUserUseCaseInterface {
   async execute(
     id: string,
     data: UpdateUserDataUseCaseInterface,
-  ): Promise<UserRecord> {
+  ): Promise<ResultUpdateUserUseCaseInterface> {
     const user = await this.updateUserRepository.update(id, data);
 
     if (!user) {
       throw new NotFoundException('User not found.');
     }
 
-    return user;
+    return { data: user };
   }
 }

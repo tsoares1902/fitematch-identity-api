@@ -8,8 +8,8 @@ import {
 import type {
   CreateUserDataUseCaseInterface,
   CreateUserUseCaseInterface,
-  ResultCreateUserUseCaseInterface,
 } from '@src/user/applications/contracts/create-user.use-case-interface';
+import type { ResultCreateUserUseCaseInterface } from '@src/user/applications/contracts/result-create-user.use-case.interface';
 
 @Injectable()
 export class CreateUserUseCase implements CreateUserUseCaseInterface {
@@ -24,11 +24,13 @@ export class CreateUserUseCase implements CreateUserUseCaseInterface {
   ): Promise<ResultCreateUserUseCaseInterface> {
     const password = await this.encryptUtils.encryptPassword(data.password);
 
-    return this.createUserRepository.createUser({
+    const user = await this.createUserRepository.createUser({
       ...data,
       isPaidMembership: data.isPaidMembership ?? false,
       password,
       status: data.status ?? UserStatusEnum.PENDING,
     });
+
+    return { data: user };
   }
 }

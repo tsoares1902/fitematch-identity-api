@@ -7,41 +7,46 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { CreateUserDto } from '@src/user/adapters/dto/create-user.dto';
-import { UserResponseDto } from '@src/user/adapters/dto/responses/user.response.dto';
+import { CreateUserDTO } from '@src/user/adapters/dto/create-user.dto';
+import { ResponseCreateUsersDTO } from '@src/user/adapters/dto/responses/create-user-response.dto';
 import {
-  CREATE_USER_USE_CASE,
+  CREATE_USER_USE_CASE_INTERFACE,
   type CreateUserUseCaseInterface,
-  type ResultCreateUserUseCaseInterface,
 } from '@src/user/applications/contracts/create-user.use-case-interface';
+import CreateUserResponse from './responses/create-user.respomse';
 
 @ApiTags('User')
 @Controller('user')
 export class CreateUserController {
   constructor(
-    @Inject(CREATE_USER_USE_CASE)
+    @Inject(CREATE_USER_USE_CASE_INTERFACE)
     private readonly createUserUseCase: CreateUserUseCaseInterface,
+    private readonly createUserResponse: CreateUserResponse,
   ) {}
 
   @ApiOperation({
     summary: 'Create user',
     description: 'Creates a new user.',
   })
-  @ApiBody({ type: CreateUserDto })
+  @ApiBody({ type: CreateUserDTO })
   @ApiCreatedResponse({
     description: 'User created successfully.',
-    type: UserResponseDto,
+    type: ResponseCreateUsersDTO,
   })
   @ApiBadRequestResponse({
     description: 'Validation error in the submitted data.',
   })
   @ApiConflictResponse({
-    description: 'username or email already exists.',
+    description: 'email already exists.',
   })
   @Post()
-  async create(
-    @Body() data: CreateUserDto,
-  ): Promise<ResultCreateUserUseCaseInterface> {
-    return this.createUserUseCase.execute(data);
+  async handler(@Body() data: CreateUserDTO): Promise<ResponseCreateUsersDTO> {
+    try {
+      const result = await this.createUserUseCase.execute(data);
+
+      return this.createUserResponse.response(result);
+    } catch (error: unknown) {
+      this.createUserResponse.catch(error);
+    }
   }
 }

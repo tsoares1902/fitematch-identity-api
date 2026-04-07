@@ -5,7 +5,6 @@ import { UserDocuments, ContactDetails, SocialMedias } from './user.interface';
 export interface CreateUserRequestInterface {
   role?: UserRoleEnum;
   isPaidMembership?: boolean;
-  username?: string;
   firstName?: string;
   lastName?: string;
   email?: string;

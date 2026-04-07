@@ -31,14 +31,13 @@ export interface SocialMedias {
 }
 
 export interface User {
-  role: UserRoleEnum;
   isPaidMembership: boolean;
-  username: string;
   firstName: string;
   lastName: string;
   email: string;
   password: string;
   birthday: string;
+  role: UserRoleEnum;
   status: UserStatusEnum;
   documents?: UserDocuments;
   details?: ContactDetails;

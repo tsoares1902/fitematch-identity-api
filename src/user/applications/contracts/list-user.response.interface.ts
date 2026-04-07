@@ -5,7 +5,6 @@ export interface ListUserResponseInterface {
     id: string;
     role: User['role'];
     isPaidMembership: User['isPaidMembership'];
-    username: User['username'];
     firstName: User['firstName'];
     lastName: User['lastName'];
     email: User['email'];

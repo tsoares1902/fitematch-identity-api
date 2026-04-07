@@ -18,12 +18,6 @@ export class UpdateUserDto {
   @IsEnum(UserRoleEnum)
   role?: UserRoleEnum;
 
-  @ApiPropertyOptional({ example: 'johndoe', maxLength: 255 })
-  @IsOptional()
-  @IsString()
-  @MaxLength(255)
-  username?: string;
-
   @ApiPropertyOptional({ example: 'John', maxLength: 255 })
   @IsOptional()
   @IsString()

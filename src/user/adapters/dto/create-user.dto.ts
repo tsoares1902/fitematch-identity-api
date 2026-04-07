@@ -9,12 +9,12 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { UserRoleEnum } from '@src/user/applications/contracts/user-role.enum';
 import { UserStatusEnum } from '@src/user/applications/contracts/user-status.enum';
 import * as userInterface from '@src/user/applications/contracts/user.interface';
-import { Type } from 'class-transformer';
 
-export class CreateUserDto {
+export class CreateUserDTO {
   @ApiProperty({
     example: UserRoleEnum.CANDIDATE || UserRoleEnum.RECRUITER,
     enum: UserRoleEnum,
@@ -27,13 +27,6 @@ export class CreateUserDto {
   @ApiProperty({ example: false, required: false, default: false })
   @IsOptional()
   isPaidMembership?: boolean;
-
-  @ApiProperty({ example: 'johndoe', minLength: 2, maxLength: 64 })
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(2)
-  @MaxLength(64)
-  username!: string;
 
   @ApiProperty({ example: 'John', minLength: 2, maxLength: 64 })
   @IsString()

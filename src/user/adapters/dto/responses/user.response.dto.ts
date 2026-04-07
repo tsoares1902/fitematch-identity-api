@@ -14,9 +14,6 @@ export class UserResponseDto {
   isPaidMembership!: boolean;
 
   @ApiProperty()
-  username!: string;
-
-  @ApiProperty()
   firstName!: string;
 
   @ApiProperty()
@@ -28,7 +25,11 @@ export class UserResponseDto {
   @ApiProperty()
   birthday!: string;
 
-  @ApiProperty({ required: false, type: Object, example: { identityDocument: '', socialDocument: '', otherDocumentt: '' } })
+  @ApiProperty({
+    required: false,
+    type: Object,
+    example: { identityDocument: '', socialDocument: '', otherDocumentt: '' },
+  })
   documents?: userInterface.UserDocuments;
 
   @ApiProperty({ required: false, type: Object })

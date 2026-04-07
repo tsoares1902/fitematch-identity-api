@@ -6,19 +6,20 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
-import { UserResponseDto } from '@src/user/adapters/dto/responses/user.response.dto';
 import {
-  READ_USER_USE_CASE,
+  READ_USER_USE_CASE_INTERFACE,
   type ReadUserUseCaseInterface,
 } from '@src/user/applications/contracts/read-user.use-case-interface';
-import type { UserRecord } from '@src/user/applications/contracts/user-record.interface';
+import { ResponseReadUserDTO } from '../dto/responses/read-user-response.dto';
+import ReadUserResponse from './responses/read-user.respomse';
 
 @ApiTags('User')
 @Controller('user')
 export class ReadUserController {
   constructor(
-    @Inject(READ_USER_USE_CASE)
-    private readonly getUserByIdUseCase: ReadUserUseCaseInterface,
+    @Inject(READ_USER_USE_CASE_INTERFACE)
+    private readonly readUserUseCase: ReadUserUseCaseInterface,
+    private readonly readUserResponse: ReadUserResponse,
   ) {}
 
   @ApiOperation({
@@ -28,13 +29,19 @@ export class ReadUserController {
   @ApiParam({ name: 'id', description: 'User identifier.' })
   @ApiOkResponse({
     description: 'User found successfully.',
-    type: UserResponseDto,
+    type: ResponseReadUserDTO,
   })
   @ApiNotFoundResponse({
-    description: 'User not found.',
+    description: 'User not found!',
   })
   @Get(':id')
-  async getById(@Param('id') id: string): Promise<UserRecord> {
-    return this.getUserByIdUseCase.execute(id);
+  async handler(@Param('id') id: string): Promise<ResponseReadUserDTO> {
+    try {
+      const result = await this.readUserUseCase.execute(id);
+
+      return this.readUserResponse.response(result);
+    } catch (error: unknown) {
+      this.readUserResponse.catch(error);
+    }
   }
 }
