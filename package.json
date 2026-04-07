@@ -19,7 +19,8 @@
     "test:cov": "export TZ=America/Sao_Paulo && jest --maxWorkers=2 --coverage --collectCoverageFrom='src/**/applications/use-cases/*.ts' --collectCoverageFrom='src/shared/applications/utils/*.ts'",
     "test:ci": "jest --coverage --collectCoverageFrom='src/**/applications/use-cases/*.ts' --collectCoverageFrom='src/shared/applications/utils/*.ts' --reporters=default --reporters=jest-junit",
     "test:debug": "export TZ=America/Sao_Paulo && node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "check": "export TZ=America/Sao_Paulo && eslint \"{src,apps,libs,test}/**/*.ts\" && jest --verbose --maxWorkers=2 --coverage --collectCoverageFrom='src/**/applications/use-cases/*.ts' --collectCoverageFrom='src/shared/applications/utils/*.ts'"
+    "check": "export TZ=America/Sao_Paulo && eslint \"{src,apps,libs,test}/**/*.ts\" && jest --verbose --maxWorkers=2 --coverage --collectCoverageFrom='src/**/applications/use-cases/*.ts' --collectCoverageFrom='src/shared/applications/utils/*.ts'",
+    "prepare": "husky"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.18",
@@ -51,6 +52,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
     "globals": "^17.4.0",
+    "husky": "^9.1.7",
     "jest": "^30.3.0",
     "prettier": "^3.8.1",
     "source-map-support": "^0.5.21",
