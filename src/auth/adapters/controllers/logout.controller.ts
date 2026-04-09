@@ -1,4 +1,4 @@
-import { Controller, Headers, Inject, Post } from '@nestjs/common';
+import { Controller, Headers, Inject, Post, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOkResponse,
@@ -6,6 +6,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { JwtAuthGuard } from '@src/auth/adapters/guards/jwt-auth.guard';
 import { LogoutResponseDto } from '@src/auth/adapters/dto/logout-response.dto';
 import {
   LOGOUT_USE_CASE,
@@ -15,6 +16,7 @@ import {
 
 @ApiTags('Auth')
 @Controller('auth')
+@UseGuards(JwtAuthGuard)
 export class LogoutController {
   constructor(
     @Inject(LOGOUT_USE_CASE)

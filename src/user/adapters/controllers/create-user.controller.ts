@@ -13,7 +13,6 @@ import {
   CREATE_USER_USE_CASE_INTERFACE,
   type CreateUserUseCaseInterface,
 } from '@src/user/applications/contracts/create-user.use-case-interface';
-import CreateUserResponse from './responses/create-user.respomse';
 
 @ApiTags('User')
 @Controller('user')
@@ -21,7 +20,6 @@ export class CreateUserController {
   constructor(
     @Inject(CREATE_USER_USE_CASE_INTERFACE)
     private readonly createUserUseCase: CreateUserUseCaseInterface,
-    private readonly createUserResponse: CreateUserResponse,
   ) {}
 
   @ApiOperation({
@@ -40,13 +38,7 @@ export class CreateUserController {
     description: 'email already exists.',
   })
   @Post()
-  async handler(@Body() data: CreateUserDTO): Promise<ResponseCreateUsersDTO> {
-    try {
-      const result = await this.createUserUseCase.execute(data);
-
-      return this.createUserResponse.response(result);
-    } catch (error: unknown) {
-      this.createUserResponse.catch(error);
-    }
+  async create(@Body() data: CreateUserDTO): Promise<ResponseCreateUsersDTO> {
+    return this.createUserUseCase.execute(data);
   }
 }

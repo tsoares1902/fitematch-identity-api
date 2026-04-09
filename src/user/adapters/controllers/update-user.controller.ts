@@ -1,5 +1,13 @@
-import { Body, Controller, Inject, Param, Patch } from '@nestjs/common';
 import {
+  Body,
+  Controller,
+  Inject,
+  Param,
+  Patch,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
   ApiBadRequestResponse,
   ApiBody,
   ApiConflictResponse,
@@ -9,27 +17,38 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { JwtAuthGuard } from '@src/auth/adapters/guards/jwt-auth.guard';
+import { Permissions } from '@src/auth/adapters/decorators/permissions.decorator';
+import { Roles } from '@src/auth/adapters/decorators/roles.decorator';
+import { PermissionsGuard } from '@src/auth/adapters/guards/permissions.guard';
+import { RolesGuard } from '@src/auth/adapters/guards/roles.guard';
 import { UpdateUserDto } from '@src/user/adapters/dto/update-user.dto';
 import {
-  UPDATE_USER_USE_CASE,
+  UPDATE_USER_USE_CASE_INTERFACE,
   type UpdateUserUseCaseInterface,
 } from '@src/user/applications/contracts/update-user.use-case-interface';
 import { ResponseUpdateUserDTO } from '../dto/responses/update-user-response.dto';
-import UpdateUserResponse from './responses/update-user.respomse';
+import {
+  AdminRoleEnum,
+  PermissionEnum,
+} from '@src/user/domains/entities/user.entity';
 
 @ApiTags('User')
 @Controller('user')
+@ApiBearerAuth('JWT')
+@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
 export class UpdateUserController {
   constructor(
-    @Inject(UPDATE_USER_USE_CASE)
+    @Inject(UPDATE_USER_USE_CASE_INTERFACE)
     private readonly updateUserUseCase: UpdateUserUseCaseInterface,
-    private readonly updateUserResponse: UpdateUserResponse,
   ) {}
 
   @ApiOperation({
     summary: 'Update user',
     description: 'Updates an existing user by its identifier.',
   })
+  @Roles(AdminRoleEnum.STAFF, AdminRoleEnum.ADMIN, AdminRoleEnum.SUPER_ADMIN)
+  @Permissions(PermissionEnum.EDIT_USERS)
   @ApiParam({ name: 'id', description: 'User identifier.' })
   @ApiBody({ type: UpdateUserDto })
   @ApiOkResponse({
@@ -50,12 +69,6 @@ export class UpdateUserController {
     @Param('id') id: string,
     @Body() data: UpdateUserDto,
   ): Promise<ResponseUpdateUserDTO> {
-    try {
-      const result = await this.updateUserUseCase.execute(id, data);
-
-      return this.updateUserResponse.response(result);
-    } catch (error: unknown) {
-      this.updateUserResponse.catch(error);
-    }
+    return this.updateUserUseCase.execute(id, data);
   }
 }

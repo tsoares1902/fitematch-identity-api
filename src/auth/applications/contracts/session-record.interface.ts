@@ -1,9 +1,14 @@
-import type { UserAgentInterface } from '@src/auth/applications/contracts/login.repository-interface';
-
 export interface SessionRecordResponse {
   userId: string;
   sessionId: string;
-  client?: UserAgentInterface;
+  client?: {
+    browser?: string;
+    deviceType?: string;
+    ip?: string;
+    os?: string;
+    timezone?: string;
+    userAgent?: string;
+  };
   active: boolean;
   createdAt: Date;
   startedAt: Date;

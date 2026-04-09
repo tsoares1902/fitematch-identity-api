@@ -1,24 +1,36 @@
-import { UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
-import { LOGIN_REPOSITORY } from '@src/auth/applications/contracts/login.repository-interface';
+import {
+  AUTHENTICATION_REPOSITORY,
+  type AuthenticatedIdentity,
+  type AuthenticationRepository,
+} from '@src/auth/domains/repositories/authentication.repository';
+import {
+  ACCESS_TOKEN_ISSUER,
+  type AccessTokenIssuer,
+} from '@src/auth/domains/services/access-token-issuer';
+import {
+  PASSWORD_VERIFIER,
+  type PasswordVerifier,
+} from '@src/auth/domains/services/password-verifier';
 import { LoginUseCase } from '@src/auth/applications/use-cases/login.use-case';
-import EncryptUtils from '@src/shared/applications/utils/encrypt.utils';
+import { InvalidCredentialsError } from '@src/auth/applications/errors/invalid-credentials.error';
+import { AuthenticationForbiddenError } from '@src/auth/applications/errors/authentication-forbidden.error';
+import { UserStatusEnum } from '@src/user/domains/entities/user.entity';
 
 describe('LoginUseCase', () => {
   let useCase: LoginUseCase;
 
-  const loginRepositoryMock = {
-    findByEmail: jest.fn(),
+  const authenticationRepositoryMock: jest.Mocked<AuthenticationRepository> = {
+    findIdentityByEmail: jest.fn(),
     createSession: jest.fn(),
   };
 
-  const encryptUtilsMock = {
-    comparePassword: jest.fn(),
+  const passwordVerifierMock: jest.Mocked<PasswordVerifier> = {
+    verify: jest.fn(),
   };
 
-  const jwtServiceMock = {
-    signAsync: jest.fn(),
+  const accessTokenIssuerMock: jest.Mocked<AccessTokenIssuer> = {
+    issue: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -28,16 +40,16 @@ describe('LoginUseCase', () => {
       providers: [
         LoginUseCase,
         {
-          provide: LOGIN_REPOSITORY,
-          useValue: loginRepositoryMock,
+          provide: AUTHENTICATION_REPOSITORY,
+          useValue: authenticationRepositoryMock,
         },
         {
-          provide: EncryptUtils,
-          useValue: encryptUtilsMock,
+          provide: PASSWORD_VERIFIER,
+          useValue: passwordVerifierMock,
         },
         {
-          provide: JwtService,
-          useValue: jwtServiceMock,
+          provide: ACCESS_TOKEN_ISSUER,
+          useValue: accessTokenIssuerMock,
         },
       ],
     }).compile();
@@ -51,42 +63,46 @@ describe('LoginUseCase', () => {
 
   describe('authentication validation', () => {
     it('should throw when the user does not exist', async () => {
-      loginRepositoryMock.findByEmail.mockResolvedValue(null);
+      authenticationRepositoryMock.findIdentityByEmail.mockResolvedValue(null);
 
       await expect(
         useCase.execute({ email: 'john@example.com', password: 'secret' }),
-      ).rejects.toThrow(UnauthorizedException);
+      ).rejects.toThrow(InvalidCredentialsError);
     });
 
     it('should throw when the password does not match', async () => {
-      loginRepositoryMock.findByEmail.mockResolvedValue({
-        id: 'user-id',
-        password: 'hashed',
-      });
-      encryptUtilsMock.comparePassword.mockResolvedValue(false);
+      authenticationRepositoryMock.findIdentityByEmail.mockResolvedValue(
+        buildIdentity(),
+      );
+      passwordVerifierMock.verify.mockResolvedValue(false);
 
       await expect(
         useCase.execute({ email: 'john@example.com', password: 'secret' }),
-      ).rejects.toThrow(UnauthorizedException);
+      ).rejects.toThrow(InvalidCredentialsError);
+    });
+
+    it('should block login for pending email verification', async () => {
+      authenticationRepositoryMock.findIdentityByEmail.mockResolvedValue(
+        buildIdentity({
+          user: { status: UserStatusEnum.PENDING_EMAIL_VERIFICATION },
+        }),
+      );
+      passwordVerifierMock.verify.mockResolvedValue(true);
+
+      await expect(
+        useCase.execute({ email: 'john@example.com', password: 'secret' }),
+      ).rejects.toThrow(AuthenticationForbiddenError);
     });
   });
 
   describe('session creation', () => {
     it('should create a session and return the access token', async () => {
-      const user = {
-        id: 'user-id',
-        password: 'hashed',
-        role: 'candidate',
-        firstName: 'John',
-        lastName: 'Doe',
-        email: 'john@example.com',
-        tokenVersion: 1,
-      };
-
-      loginRepositoryMock.findByEmail.mockResolvedValue(user);
-      encryptUtilsMock.comparePassword.mockResolvedValue(true);
-      loginRepositoryMock.createSession.mockResolvedValue(undefined);
-      jwtServiceMock.signAsync.mockResolvedValue('token');
+      authenticationRepositoryMock.findIdentityByEmail.mockResolvedValue(
+        buildIdentity(),
+      );
+      passwordVerifierMock.verify.mockResolvedValue(true);
+      authenticationRepositoryMock.createSession.mockResolvedValue();
+      accessTokenIssuerMock.issue.mockResolvedValue('token');
 
       await expect(
         useCase.execute({
@@ -94,10 +110,60 @@ describe('LoginUseCase', () => {
           password: 'secret',
           client: { browser: 'Chrome' },
         }),
-      ).resolves.toEqual({ access_token: 'token' });
+      ).resolves.toEqual({
+        accessToken: 'token',
+        user: {
+          id: 'user-id',
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'john@example.com',
+          status: UserStatusEnum.ACTIVE,
+          productRole: 'candidate',
+          adminRole: undefined,
+          permissions: undefined,
+          isInternal: false,
+        },
+      });
 
-      expect(loginRepositoryMock.createSession).toHaveBeenCalled();
-      expect(jwtServiceMock.signAsync).toHaveBeenCalled();
+      expect(authenticationRepositoryMock.createSession).toHaveBeenCalled();
+      expect(accessTokenIssuerMock.issue).toHaveBeenCalledWith({
+        sub: 'user-id',
+        sid: expect.any(String),
+        ver: 1,
+        typ: 'product',
+        pr: 'candidate',
+        ar: undefined,
+        perm: undefined,
+      });
     });
   });
 });
+
+function buildIdentity(
+  overrides?: Partial<AuthenticatedIdentity>,
+): AuthenticatedIdentity {
+  return {
+    user: {
+      id: 'user-id',
+      firstName: 'John',
+      lastName: 'Doe',
+      email: 'john@example.com',
+      status: UserStatusEnum.ACTIVE,
+      productRole: 'candidate',
+      isInternal: false,
+    },
+    passwordHash: 'hashed',
+    tokenVersion: 1,
+    ...overrides,
+    user: {
+      id: 'user-id',
+      firstName: 'John',
+      lastName: 'Doe',
+      email: 'john@example.com',
+      status: UserStatusEnum.ACTIVE,
+      productRole: 'candidate',
+      isInternal: false,
+      ...overrides?.user,
+    },
+  };
+}

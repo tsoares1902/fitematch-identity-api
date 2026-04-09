@@ -1,44 +1,26 @@
 import EncryptUtils from '@src/shared/applications/utils/encrypt.utils';
-import MasksUtils, {
-  MASKS_UTILS,
-} from '@src/shared/applications/utils/masks.utils';
-import MetadataUtils from '@src/shared/applications/utils/metadata.utils';
-import CreateUserResponse from '@src/user/adapters/controllers/responses/create-user.respomse';
-import DeleteUserResponse from '@src/user/adapters/controllers/responses/delete-user.respomse';
-import { UserRepository } from '@src/user/adapters/repositories/user.repository';
-import ListUserResponse from '@src/user/adapters/controllers/responses/list-user.respomse';
-import ReadUserResponse from '@src/user/adapters/controllers/responses/read-user.respomse';
-import UpdateUserResponse from '@src/user/adapters/controllers/responses/update-user.respomse';
+import { UserCommandRepositoryAdapter } from '@src/user/adapters/persistence/repositories/user-command.repository';
+import { UserQueryRepositoryAdapter } from '@src/user/adapters/persistence/repositories/user-query.repository';
 import { ListUsersUseCase } from '@src/user/applications/use-cases/list-users.use-case';
 import { CreateUserUseCase } from '@src/user/applications/use-cases/create-user.use-case';
 import { ReadUserUseCase } from '@src/user/applications/use-cases/read-user.use-case';
 import { UpdateUserUseCase } from '@src/user/applications/use-cases/update-user.use-case';
 import { DeleteUserUseCase } from '@src/user/applications/use-cases/delete-user.use-case';
-import { LIST_USER_REPOSITORY_INTERFACE } from '@src/user/applications/contracts/list-user.repository-interface';
-import { CREATE_USER_REPOSITORY } from '@src/user/applications/contracts/create-user.repository-interface';
-import { READ_USER_REPOSITORY_INTERFACE } from '@src/user/applications/contracts/read-user.repository-interface';
-import { UPDATE_USER_REPOSITORY } from '@src/user/applications/contracts/update-user.repository-interface';
-import { DELETE_USER_REPOSITORY } from '@src/user/applications/contracts/delete-user.repository-interface';
-import { LIST_USERS_USE_CASE_INTERFACE } from '@src/user/applications/contracts/list-users.use-case-interface';
+import { CREATE_USER_REPOSITORY_INTERFACE } from '@src/user/applications/contracts/create-user.repository-interface';
+import { LIST_USER_USE_CASE_INTERFACE } from '@src/user/applications/contracts/list-user.use-case-interface';
 import { CREATE_USER_USE_CASE_INTERFACE } from '@src/user/applications/contracts/create-user.use-case-interface';
 import { READ_USER_USE_CASE_INTERFACE } from '@src/user/applications/contracts/read-user.use-case-interface';
-import { UPDATE_USER_USE_CASE } from '@src/user/applications/contracts/update-user.use-case-interface';
-import { DELETE_USER_USE_CASE } from '@src/user/applications/contracts/delete-user.use-case-interface';
+import { UPDATE_USER_USE_CASE_INTERFACE } from '@src/user/applications/contracts/update-user.use-case-interface';
+import { DELETE_USER_USE_CASE_INTERFACE } from '@src/user/applications/contracts/delete-user.use-case-interface';
+import { USER_COMMAND_REPOSITORY } from '@src/user/domains/repositories/user-command.repository';
+import { USER_QUERY_REPOSITORY } from '@src/user/domains/repositories/user-query.repository';
 
 export const userProviders = [
   EncryptUtils,
-  MetadataUtils,
-  CreateUserResponse,
-  ReadUserResponse,
-  UpdateUserResponse,
-  DeleteUserResponse,
-  ListUserResponse,
+  UserQueryRepositoryAdapter,
+  UserCommandRepositoryAdapter,
   {
-    provide: MASKS_UTILS,
-    useClass: MasksUtils,
-  },
-  {
-    provide: LIST_USERS_USE_CASE_INTERFACE,
+    provide: LIST_USER_USE_CASE_INTERFACE,
     useClass: ListUsersUseCase,
   },
   {
@@ -50,31 +32,23 @@ export const userProviders = [
     useClass: ReadUserUseCase,
   },
   {
-    provide: UPDATE_USER_USE_CASE,
+    provide: UPDATE_USER_USE_CASE_INTERFACE,
     useClass: UpdateUserUseCase,
   },
   {
-    provide: DELETE_USER_USE_CASE,
+    provide: DELETE_USER_USE_CASE_INTERFACE,
     useClass: DeleteUserUseCase,
   },
   {
-    provide: LIST_USER_REPOSITORY_INTERFACE,
-    useClass: UserRepository,
+    provide: CREATE_USER_REPOSITORY_INTERFACE,
+    useExisting: UserCommandRepositoryAdapter,
   },
   {
-    provide: CREATE_USER_REPOSITORY,
-    useClass: UserRepository,
+    provide: USER_QUERY_REPOSITORY,
+    useExisting: UserQueryRepositoryAdapter,
   },
   {
-    provide: READ_USER_REPOSITORY_INTERFACE,
-    useClass: UserRepository,
-  },
-  {
-    provide: UPDATE_USER_REPOSITORY,
-    useClass: UserRepository,
-  },
-  {
-    provide: DELETE_USER_REPOSITORY,
-    useClass: UserRepository,
+    provide: USER_COMMAND_REPOSITORY,
+    useExisting: UserCommandRepositoryAdapter,
   },
 ];

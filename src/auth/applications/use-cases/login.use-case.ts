@@ -1,83 +1,115 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import {
-  LOGIN_REPOSITORY,
-  type LoginRepositoryInterface,
-} from '@src/auth/applications/contracts/login.repository-interface';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   type LoginRequest,
   type LoginResponse,
   type LoginUseCaseInterface,
 } from '@src/auth/applications/contracts/login.use-case-interface';
-import type { UserAgentInterface } from '@src/auth/applications/contracts/login.repository-interface';
-import EncryptUtils from '@src/shared/applications/utils/encrypt.utils';
+import {
+  AUTHENTICATION_REPOSITORY,
+  type AuthenticationRepository,
+} from '@src/auth/domains/repositories/authentication.repository';
+import {
+  ACCESS_TOKEN_ISSUER,
+  type AccessTokenType,
+  type AccessTokenIssuer,
+} from '@src/auth/domains/services/access-token-issuer';
+import {
+  PASSWORD_VERIFIER,
+  type PasswordVerifier,
+} from '@src/auth/domains/services/password-verifier';
+import { InvalidCredentialsError } from '@src/auth/applications/errors/invalid-credentials.error';
+import { AuthenticationForbiddenError } from '@src/auth/applications/errors/authentication-forbidden.error';
+import { UserStatusEnum } from '@src/user/domains/entities/user.entity';
 
 @Injectable()
 export class LoginUseCase implements LoginUseCaseInterface {
   constructor(
-    @Inject(LOGIN_REPOSITORY)
-    private readonly loginRepository: LoginRepositoryInterface,
-    private readonly encryptUtils: EncryptUtils,
-    private readonly jwtService: JwtService,
+    @Inject(AUTHENTICATION_REPOSITORY)
+    private readonly authenticationRepository: AuthenticationRepository,
+    @Inject(PASSWORD_VERIFIER)
+    private readonly passwordVerifier: PasswordVerifier,
+    @Inject(ACCESS_TOKEN_ISSUER)
+    private readonly accessTokenIssuer: AccessTokenIssuer,
   ) {}
 
   async execute(data: LoginRequest): Promise<LoginResponse> {
-    const user = await this.loginRepository.findByEmail(data.email);
+    const identity = await this.authenticationRepository.findIdentityByEmail(
+      data.email,
+    );
 
-    if (!user) {
-      throw new UnauthorizedException('invalid credentials');
+    if (!identity) {
+      throw new InvalidCredentialsError();
     }
 
-    const passwordMatches = await this.encryptUtils.comparePassword(
+    const passwordMatches = await this.passwordVerifier.verify(
       data.password,
-      user.password,
+      identity.passwordHash,
     );
 
     if (!passwordMatches) {
-      throw new UnauthorizedException('invalid credentials');
+      throw new InvalidCredentialsError();
     }
 
-    const createdAt = new Date();
-    const sessionId = `${user.id}-${Date.now()}`;
-    const client = this.normalizeClient(data.client);
+    this.ensureUserCanAuthenticate(identity.user.status);
 
-    await this.loginRepository.createSession({
-      userId: user.id,
+    const createdAt = new Date();
+    const sessionId = `${identity.user.id}-${Date.now()}`;
+
+    await this.authenticationRepository.createSession({
+      userId: identity.user.id,
       sessionId,
-      client,
+      client: data.client,
       active: true,
       createdAt,
       startedAt: createdAt,
     });
 
-    const payload = {
-      sub: user.id,
-      sessionId,
-      role: user.role,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      tokenVersion: user.tokenVersion,
-    };
+    const accessToken = await this.accessTokenIssuer.issue({
+      sub: identity.user.id,
+      sid: sessionId,
+      ver: identity.tokenVersion,
+      typ: this.resolveTokenType(identity.user.isInternal),
+      pr: identity.user.productRole,
+      ar: identity.user.adminRole,
+      perm: identity.user.permissions,
+    });
 
     return {
-      access_token: await this.jwtService.signAsync(payload),
+      accessToken,
+      user: {
+        id: identity.user.id,
+        firstName: identity.user.firstName,
+        lastName: identity.user.lastName,
+        email: identity.user.email,
+        status: identity.user.status,
+        productRole: identity.user.productRole,
+        adminRole: identity.user.adminRole,
+        permissions: identity.user.permissions,
+        isInternal: identity.user.isInternal,
+      },
     };
   }
 
-  private normalizeClient(
-    client?: LoginRequest['client'],
-  ): UserAgentInterface | undefined {
-    if (!client) {
-      return undefined;
+  private ensureUserCanAuthenticate(status: UserStatusEnum): void {
+    if (status === UserStatusEnum.ACTIVE) {
+      return;
     }
 
-    const normalizedClient = Object.fromEntries(
-      Object.entries(client).filter(([, value]) => value !== undefined),
-    ) as UserAgentInterface;
+    switch (status) {
+      case UserStatusEnum.PENDING_EMAIL_VERIFICATION:
+        throw new AuthenticationForbiddenError('email verification pending');
+      case UserStatusEnum.SUSPENDED:
+        throw new AuthenticationForbiddenError('user account is suspended');
+      case UserStatusEnum.DEACTIVATED:
+        throw new AuthenticationForbiddenError('user account is deactivated');
+      case UserStatusEnum.BANNED:
+        throw new AuthenticationForbiddenError('user account is banned');
+      default:
+        throw new AuthenticationForbiddenError();
+    }
+  }
 
-    return Object.keys(normalizedClient).length > 0
-      ? normalizedClient
-      : undefined;
+  private resolveTokenType(isInternal?: boolean): AccessTokenType {
+    return isInternal ? 'internal' : 'product';
   }
 }

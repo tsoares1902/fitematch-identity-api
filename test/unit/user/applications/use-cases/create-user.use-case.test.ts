@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CREATE_USER_REPOSITORY } from '@src/user/applications/contracts/create-user.repository-interface';
+import { CREATE_USER_REPOSITORY_INTERFACE } from '@src/user/applications/contracts/create-user.repository-interface';
 import { UserStatusEnum } from '@src/user/applications/contracts/user-status.enum';
 import { CreateUserUseCase } from '@src/user/applications/use-cases/create-user.use-case';
 import EncryptUtils from '@src/shared/applications/utils/encrypt.utils';
@@ -22,7 +22,7 @@ describe('CreateUserUseCase', () => {
       providers: [
         CreateUserUseCase,
         {
-          provide: CREATE_USER_REPOSITORY,
+          provide: CREATE_USER_REPOSITORY_INTERFACE,
           useValue: createUserRepositoryMock,
         },
         {

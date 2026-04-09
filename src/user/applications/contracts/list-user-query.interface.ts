@@ -1,9 +1,9 @@
-import type { UserRoleEnum } from '@src/user/applications/contracts/user-role.enum';
-import type { UserStatusEnum } from '@src/user/applications/contracts/user-status.enum';
-import { UserDocuments, ContactDetails, SocialMedias } from './user.interface';
+import type {
+  ProductRoleEnum,
+  UserStatusEnum,
+} from '@src/user/domains/entities/user.entity';
 
 export type ListUserSortField =
-  | 'isPaidMembership'
   | 'firstName'
   | 'lastName'
   | 'email'
@@ -12,21 +12,16 @@ export type ListUserSortField =
 
 export type ListUserSortOrder = 'asc' | 'desc';
 
-export interface ListUsersQueryInterface {
+export interface ListUserQueryInterface {
   id?: string;
-  role?: UserRoleEnum;
-  isPaidMembership?: boolean;
+  productRole?: ProductRoleEnum;
+  isInternal?: boolean;
   firstName?: string;
   lastName?: string;
   email?: string;
   status?: UserStatusEnum;
-  birthday?: string;
-  documents?: UserDocuments;
-  details?: ContactDetails;
-  social?: SocialMedias;
   page?: number;
   limit?: number;
-  route?: string;
   sortBy?: ListUserSortField;
   sortOrder?: ListUserSortOrder;
 }

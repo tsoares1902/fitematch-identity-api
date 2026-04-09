@@ -1,5 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsBoolean,
   IsInt,
   IsEmail,
   IsEnum,
@@ -12,8 +13,11 @@ import {
   type ListUserSortField,
   type ListUserSortOrder,
 } from '@src/user/applications/contracts/list-user-query.interface';
-import { UserRoleEnum } from '@src/user/applications/contracts/user-role.enum';
-import { UserStatusEnum } from '@src/user/applications/contracts/user-status.enum';
+import {
+  AdminRoleEnum,
+  ProductRoleEnum,
+  UserStatusEnum,
+} from '@src/user/domains/entities/user.entity';
 
 enum ListUsersSortFieldEnum {
   FIRST_NAME = 'firstName',
@@ -46,10 +50,21 @@ export class ListUsersQueryDto {
   @IsString()
   id?: string;
 
-  @ApiPropertyOptional({ example: UserRoleEnum.CANDIDATE, enum: UserRoleEnum })
+  @ApiPropertyOptional({
+    example: ProductRoleEnum.CANDIDATE,
+    enum: ProductRoleEnum,
+  })
   @IsOptional()
-  @IsEnum(UserRoleEnum)
-  role?: UserRoleEnum;
+  @IsEnum(ProductRoleEnum)
+  productRole?: ProductRoleEnum;
+
+  @ApiPropertyOptional({
+    example: AdminRoleEnum.ADMIN,
+    enum: AdminRoleEnum,
+  })
+  @IsOptional()
+  @IsEnum(AdminRoleEnum)
+  adminRole?: AdminRoleEnum;
 
   @ApiPropertyOptional({ example: 'John', maxLength: 255 })
   @IsOptional()
@@ -70,12 +85,17 @@ export class ListUsersQueryDto {
   email?: string;
 
   @ApiPropertyOptional({
-    example: UserStatusEnum.ENABLED,
+    example: UserStatusEnum.ACTIVE,
     enum: UserStatusEnum,
   })
   @IsOptional()
   @IsEnum(UserStatusEnum)
   status?: UserStatusEnum;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  isInternal?: boolean;
 
   @ApiPropertyOptional({
     example: ListUsersSortFieldEnum.CREATED_AT,

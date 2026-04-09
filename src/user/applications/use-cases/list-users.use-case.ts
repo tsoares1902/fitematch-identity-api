@@ -1,146 +1,70 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { BrazilPersonIdentityDocumentMaskInterface } from '@src/shared/applications/contracts/brazil-person-identity-document-mask.interface';
-import { BrazilPersonSocialDocumentMaskInterface } from '@src/shared/applications/contracts/brazil-person-social-document-mask.interface';
-import { BrazilPhoneMaskInterface } from '@src/shared/applications/contracts/brazil-phone-mask.interface';
-import { BrazilZipCodeMaskInterface } from '@src/shared/applications/contracts/brazil-zip-code-mask.interface';
-import ResultPaginationInterface from '@src/shared/applications/contracts/result-pagination.interface';
-import MetadataUtils from '@src/shared/applications/utils/metadata.utils';
-import { MASKS_UTILS } from '@src/shared/applications/utils/masks.utils';
+import type { ListUsersUseCaseInterface } from '@src/user/applications/contracts/list-user.use-case-interface';
+import type {
+  ListUsersOutputDto,
+  ResultListUserUseCaseInterface,
+} from '@src/user/applications/contracts/result-list-user.use-case.interface';
+import type { ListUserQueryInterface } from '@src/user/applications/contracts/list-user-query.interface';
 import {
-  LIST_USER_REPOSITORY_INTERFACE,
-  type ListUserRepositoryInterface,
-} from '@src/user/applications/contracts/list-user.repository-interface';
-import type { ListUsersUseCaseInterface } from '@src/user/applications/contracts/list-users.use-case-interface';
-import type { ResultListUserUseCaseInterface } from '@src/user/applications/contracts/result-list-user.use-case.interface';
-import type { ListUsersQueryInterface } from '@src/user/applications/contracts/list-user-query.interface';
+  USER_QUERY_REPOSITORY,
+  type UserQueryRepository,
+} from '@src/user/domains/repositories/user-query.repository';
+import type { User } from '@src/user/domains/entities/user.entity';
+
 @Injectable()
 export class ListUsersUseCase implements ListUsersUseCaseInterface {
   constructor(
-    @Inject(LIST_USER_REPOSITORY_INTERFACE)
-    private readonly listUserRepository: ListUserRepositoryInterface,
-    @Inject(MASKS_UTILS)
-    private readonly masksUtils: BrazilPersonIdentityDocumentMaskInterface &
-      BrazilPersonSocialDocumentMaskInterface &
-      BrazilPhoneMaskInterface &
-      BrazilZipCodeMaskInterface,
-    private readonly metadataUtils: MetadataUtils,
+    @Inject(USER_QUERY_REPOSITORY)
+    private readonly userQueryRepository: UserQueryRepository,
   ) {}
 
   async execute(
-    filters: ListUsersQueryInterface,
+    filters: ListUserQueryInterface,
   ): Promise<ResultListUserUseCaseInterface> {
     const {
       data: users,
       totalItems,
       currentPage,
       itemsPerPage,
-    } = await this.listUserRepository.list(filters);
-
-    if (users.length <= 0) {
-      return {
-        data: [],
-        ...this.getEmptyMetadata(filters),
-      };
-    }
-
-    const resultUSers = users.map((item) => {
-      const documents = {
-        ...(item.documents?.identityDocument && {
-          identityDocument: this.masksUtils.brazilPersonIdentityDocumentMask(
-            item.documents.identityDocument,
-          ),
-        }),
-        ...(item.documents?.socialDocument && {
-          socialDocument: this.masksUtils.brazilPersonSocialDocumentMask(
-            item.documents.socialDocument,
-          ),
-        }),
-        ...(item.documents?.otherDocumentt && {
-          otherDocumentt: item.documents.otherDocumentt,
-        }),
-      };
-      const details = {
-        ...(item.details?.phone && {
-          phone: this.masksUtils.brazilPhoneMask(item.details.phone),
-        }),
-        ...(item.details?.isWhatsapp !== undefined && {
-          isWhatsapp: item.details.isWhatsapp,
-        }),
-        ...(item.details?.isTelegram !== undefined && {
-          isTelegram: item.details.isTelegram,
-        }),
-        ...(item.details?.street && { street: item.details.street }),
-        ...(item.details?.number && { number: item.details.number }),
-        ...(item.details?.complement && {
-          complement: item.details.complement,
-        }),
-        ...(item.details?.neighborhood && {
-          neighborhood: item.details.neighborhood,
-        }),
-        ...(item.details?.city && { city: item.details.city }),
-        ...(item.details?.state && { state: item.details.state }),
-        ...(item.details?.country && { country: item.details.country }),
-        ...(item.details?.zipCode && {
-          zipCode: this.masksUtils.brazilZipCodeMask(item.details.zipCode),
-        }),
-      };
-      const social = {
-        ...(item.social?.facebook && { facebook: item.social.facebook }),
-        ...(item.social?.x && { x: item.social.x }),
-        ...(item.social?.instagram && { instagram: item.social.instagram }),
-        ...(item.social?.linkedin && { linkedin: item.social.linkedin }),
-        ...(item.social?.whatsapp && { whatsapp: item.social.whatsapp }),
-        ...(item.social?.telegram && { telegram: item.social.telegram }),
-      };
-
-      return {
-        id: item.id,
-        isPaidMembership: item.isPaidMembership,
-        firstName: item.firstName,
-        lastName: item.lastName,
-        email: item.email,
-        birthday: item.birthday,
-        role: item.role,
-        status: item.status,
-        documents,
-        details,
-        social,
-      };
-    });
+    } = await this.userQueryRepository.list(filters);
 
     return {
-      data: resultUSers,
-      metadata: {
-        pagination: this.metadataUtils.getDadosPaginacao(
-          totalItems,
-          resultUSers.length,
-          itemsPerPage,
-          currentPage,
-          filters.route ?? '/user',
-        ),
+      data: users.map((user) => this.toOutput(user)),
+      pagination: {
+        totalItems,
+        itemCount: users.length,
+        itemsPerPage,
+        totalPages: totalItems > 0 ? Math.ceil(totalItems / itemsPerPage) : 0,
+        currentPage,
       },
     };
   }
 
-  private getEmptyMetadata(data: ListUsersQueryInterface): {
-    metadata: { pagination: ResultPaginationInterface };
-  } {
+  private toOutput(user: User): ListUsersOutputDto {
     return {
-      metadata: {
-        pagination: {
-          totalItems: 0,
-          itemCount: 0,
-          itemsPerPage: Number(data.limit || 10),
-          totalPages: 0,
-          currentPage: Number(data.page || 1),
-          links: {
-            first: data.route ?? '/user',
-            previous: '',
-            next: '',
-            last: '',
-          },
-        },
-      },
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      birthday: user.birthday,
+      status: user.status,
+      productRole: user.productRole,
+      adminRole: user.adminRole,
+      permissions: user.permissions,
+      isInternal: user.isInternal,
+      candidateProfile: user.candidateProfile,
+      recruiterProfile: user.recruiterProfile,
+      emailVerifiedAt: user.emailVerifiedAt,
+      createdBy: user.createdBy,
+      lastLoginAt: user.lastLoginAt,
+      suspendedAt: user.suspendedAt,
+      suspendedReason: user.suspendedReason,
+      deactivatedAt: user.deactivatedAt,
+      deactivatedReason: user.deactivatedReason,
+      bannedAt: user.bannedAt,
+      bannedReason: user.bannedReason,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     };
   }
 }

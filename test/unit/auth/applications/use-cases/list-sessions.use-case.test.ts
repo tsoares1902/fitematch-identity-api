@@ -1,12 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { LIST_SESSIONS_REPOSITORY } from '@src/auth/applications/contracts/list-sessions.repository-interface';
 import { ListSessionsUseCase } from '@src/auth/applications/use-cases/list-sessions.use-case';
+import { SESSION_QUERY_REPOSITORY } from '@src/auth/domains/repositories/session-query.repository';
 
 describe('ListSessionsUseCase', () => {
   let useCase: ListSessionsUseCase;
 
-  const listSessionsRepositoryMock = {
-    findByUserId: jest.fn(),
+  const sessionQueryRepositoryMock = {
+    listByUserId: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -16,8 +16,8 @@ describe('ListSessionsUseCase', () => {
       providers: [
         ListSessionsUseCase,
         {
-          provide: LIST_SESSIONS_REPOSITORY,
-          useValue: listSessionsRepositoryMock,
+          provide: SESSION_QUERY_REPOSITORY,
+          useValue: sessionQueryRepositoryMock,
         },
       ],
     }).compile();
@@ -30,20 +30,24 @@ describe('ListSessionsUseCase', () => {
   });
 
   it('should return the sessions from the repository', async () => {
+    const createdAt = new Date('2024-01-01T00:00:00.000Z');
+    const updatedAt = new Date('2024-01-02T00:00:00.000Z');
     const expected = [
       {
         userId: 'user-id',
         sessionId: 'session-id',
+        client: 'chrome',
         active: true,
-        createdAt: new Date('2024-01-01T00:00:00.000Z'),
-        startedAt: new Date('2024-01-01T00:00:00.000Z'),
+        createdAt,
+        startedAt: createdAt,
+        updatedAt,
       },
     ];
 
-    listSessionsRepositoryMock.findByUserId.mockResolvedValue(expected);
+    sessionQueryRepositoryMock.listByUserId.mockResolvedValue(expected);
 
     await expect(useCase.execute('user-id')).resolves.toEqual(expected);
-    expect(listSessionsRepositoryMock.findByUserId).toHaveBeenCalledWith(
+    expect(sessionQueryRepositoryMock.listByUserId).toHaveBeenCalledWith(
       'user-id',
     );
   });

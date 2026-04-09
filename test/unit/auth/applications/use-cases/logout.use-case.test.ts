@@ -1,20 +1,28 @@
-import { UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
-import { LOGIN_REPOSITORY } from '@src/auth/applications/contracts/login.repository-interface';
+import {
+  AUTHENTICATION_SESSION_REPOSITORY,
+  type AuthenticationSessionRepository,
+} from '@src/auth/domains/repositories/authentication-session.repository';
+import {
+  ACCESS_TOKEN_VERIFIER,
+  type AccessTokenVerifier,
+} from '@src/auth/domains/services/access-token-verifier';
 import { LogoutUseCase } from '@src/auth/applications/use-cases/logout.use-case';
+import { InvalidAuthorizationHeaderError } from '@src/auth/applications/errors/invalid-authorization-header.error';
+import { InvalidTokenError } from '@src/auth/applications/errors/invalid-token.error';
 
 describe('LogoutUseCase', () => {
   let useCase: LogoutUseCase;
 
-  const loginRepositoryMock = {
-    findById: jest.fn(),
-    deactivateSession: jest.fn(),
-    incrementTokenVersion: jest.fn(),
-  };
+  const authenticationSessionRepositoryMock: jest.Mocked<AuthenticationSessionRepository> =
+    {
+      findIdentityById: jest.fn(),
+      incrementTokenVersion: jest.fn(),
+      deactivateSession: jest.fn(),
+    };
 
-  const jwtServiceMock = {
-    verifyAsync: jest.fn(),
+  const accessTokenVerifierMock: jest.Mocked<AccessTokenVerifier> = {
+    verify: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -24,12 +32,12 @@ describe('LogoutUseCase', () => {
       providers: [
         LogoutUseCase,
         {
-          provide: LOGIN_REPOSITORY,
-          useValue: loginRepositoryMock,
+          provide: AUTHENTICATION_SESSION_REPOSITORY,
+          useValue: authenticationSessionRepositoryMock,
         },
         {
-          provide: JwtService,
-          useValue: jwtServiceMock,
+          provide: ACCESS_TOKEN_VERIFIER,
+          useValue: accessTokenVerifierMock,
         },
       ],
     }).compile();
@@ -43,117 +51,143 @@ describe('LogoutUseCase', () => {
 
   describe('authorization validation', () => {
     it('should throw when authorization header is missing', async () => {
-      await expect(useCase.execute({})).rejects.toThrow(UnauthorizedException);
+      await expect(useCase.execute({})).rejects.toThrow(
+        InvalidAuthorizationHeaderError,
+      );
     });
 
     it('should throw when authorization header format is invalid', async () => {
       await expect(
         useCase.execute({ authorization: 'Invalid token' }),
-      ).rejects.toThrow(UnauthorizedException);
+      ).rejects.toThrow(InvalidAuthorizationHeaderError);
     });
   });
 
   describe('token validation', () => {
     it('should throw when the token is invalid', async () => {
-      jwtServiceMock.verifyAsync.mockRejectedValue(new Error('invalid'));
+      accessTokenVerifierMock.verify.mockRejectedValue(new InvalidTokenError());
 
       await expect(
         useCase.execute({ authorization: 'Bearer token' }),
-      ).rejects.toThrow(UnauthorizedException);
-    });
-
-    it('should throw when the decoded payload is invalid', async () => {
-      jwtServiceMock.verifyAsync.mockResolvedValue('invalid-payload');
-
-      await expect(
-        useCase.execute({ authorization: 'Bearer token' }),
-      ).rejects.toThrow(UnauthorizedException);
+      ).rejects.toThrow(InvalidTokenError);
     });
   });
 
   describe('session invalidation', () => {
     it('should throw when the user from the token is not found', async () => {
-      jwtServiceMock.verifyAsync.mockResolvedValue({
+      accessTokenVerifierMock.verify.mockResolvedValue({
         sub: 'user-id',
-        sessionId: 'session-id',
-        tokenVersion: 1,
+        sid: 'session-id',
+        ver: 1,
       });
-      loginRepositoryMock.findById.mockResolvedValue(null);
+      authenticationSessionRepositoryMock.findIdentityById.mockResolvedValue(
+        null,
+      );
 
       await expect(
         useCase.execute({ authorization: 'Bearer token' }),
-      ).rejects.toThrow(UnauthorizedException);
+      ).rejects.toThrow(InvalidTokenError);
     });
 
     it('should throw when the token version is outdated', async () => {
-      jwtServiceMock.verifyAsync.mockResolvedValue({
+      accessTokenVerifierMock.verify.mockResolvedValue({
         sub: 'user-id',
-        sessionId: 'session-id',
-        tokenVersion: 1,
+        sid: 'session-id',
+        ver: 1,
       });
-      loginRepositoryMock.findById.mockResolvedValue({
-        id: 'user-id',
+      authenticationSessionRepositoryMock.findIdentityById.mockResolvedValue({
+        user: {
+          id: 'user-id',
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'john@example.com',
+          status: 'active',
+        },
         tokenVersion: 2,
-      });
+      } as never);
 
       await expect(
         useCase.execute({ authorization: 'Bearer token' }),
-      ).rejects.toThrow(UnauthorizedException);
+      ).rejects.toThrow(InvalidTokenError);
     });
 
     it('should throw when the payload does not contain a session id', async () => {
-      jwtServiceMock.verifyAsync.mockResolvedValue({
+      accessTokenVerifierMock.verify.mockResolvedValue({
         sub: 'user-id',
-        tokenVersion: 1,
+        ver: 1,
       });
-      loginRepositoryMock.findById.mockResolvedValue({
-        id: 'user-id',
+      authenticationSessionRepositoryMock.findIdentityById.mockResolvedValue({
+        user: {
+          id: 'user-id',
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'john@example.com',
+          status: 'active',
+        },
         tokenVersion: 1,
-      });
+      } as never);
 
       await expect(
         useCase.execute({ authorization: 'Bearer token' }),
-      ).rejects.toThrow(UnauthorizedException);
+      ).rejects.toThrow(InvalidTokenError);
     });
 
     it('should throw when the active session is not found', async () => {
-      jwtServiceMock.verifyAsync.mockResolvedValue({
+      accessTokenVerifierMock.verify.mockResolvedValue({
         sub: 'user-id',
-        sessionId: 'session-id',
-        tokenVersion: 1,
+        sid: 'session-id',
+        ver: 1,
       });
-      loginRepositoryMock.findById.mockResolvedValue({
-        id: 'user-id',
+      authenticationSessionRepositoryMock.findIdentityById.mockResolvedValue({
+        user: {
+          id: 'user-id',
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'john@example.com',
+          status: 'active',
+        },
         tokenVersion: 1,
-      });
-      loginRepositoryMock.deactivateSession.mockResolvedValue(false);
+      } as never);
+      authenticationSessionRepositoryMock.deactivateSession.mockResolvedValue(
+        false,
+      );
 
       await expect(
         useCase.execute({ authorization: 'Bearer token' }),
-      ).rejects.toThrow(UnauthorizedException);
+      ).rejects.toThrow(InvalidTokenError);
     });
 
     it('should deactivate the session and invalidate the token version', async () => {
-      jwtServiceMock.verifyAsync.mockResolvedValue({
+      accessTokenVerifierMock.verify.mockResolvedValue({
         sub: 'user-id',
-        sessionId: 'session-id',
-        tokenVersion: 1,
+        sid: 'session-id',
+        ver: 1,
       });
-      loginRepositoryMock.findById.mockResolvedValue({
-        id: 'user-id',
+      authenticationSessionRepositoryMock.findIdentityById.mockResolvedValue({
+        user: {
+          id: 'user-id',
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'john@example.com',
+          status: 'active',
+        },
         tokenVersion: 1,
-      });
-      loginRepositoryMock.deactivateSession.mockResolvedValue(true);
-      loginRepositoryMock.incrementTokenVersion.mockResolvedValue(undefined);
+      } as never);
+      authenticationSessionRepositoryMock.deactivateSession.mockResolvedValue(
+        true,
+      );
+      authenticationSessionRepositoryMock.incrementTokenVersion.mockResolvedValue();
 
       await expect(
         useCase.execute({ authorization: 'Bearer token' }),
       ).resolves.toEqual({ success: true });
 
-      expect(loginRepositoryMock.deactivateSession).toHaveBeenCalled();
-      expect(loginRepositoryMock.incrementTokenVersion).toHaveBeenCalledWith(
-        'user-id',
-      );
+      expect(
+        authenticationSessionRepositoryMock.deactivateSession,
+      ).toHaveBeenCalled();
+      expect(
+        authenticationSessionRepositoryMock.incrementTokenVersion,
+      ).toHaveBeenCalledWith('user-id');
     });
   });
 });

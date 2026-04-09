@@ -1,103 +1,79 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import {
-  type LoginRepositoryInterface,
-  LOGIN_REPOSITORY,
-} from '@src/auth/applications/contracts/login.repository-interface';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   type LogoutRequest,
   type LogoutResponse,
   type LogoutUseCaseInterface,
 } from '@src/auth/applications/contracts/logout.use-case-interface';
-
-interface AuthTokenPayload {
-  sub: string;
-  sessionId?: string;
-  tokenVersion?: number;
-}
+import {
+  AUTHENTICATION_SESSION_REPOSITORY,
+  type AuthenticationSessionRepository,
+} from '@src/auth/domains/repositories/authentication-session.repository';
+import {
+  ACCESS_TOKEN_VERIFIER,
+  type AccessTokenVerifier,
+} from '@src/auth/domains/services/access-token-verifier';
+import { InvalidAuthorizationHeaderError } from '@src/auth/applications/errors/invalid-authorization-header.error';
+import { InvalidTokenError } from '@src/auth/applications/errors/invalid-token.error';
 
 @Injectable()
 export class LogoutUseCase implements LogoutUseCaseInterface {
   constructor(
-    @Inject(LOGIN_REPOSITORY)
-    private readonly loginRepository: LoginRepositoryInterface,
-    private readonly jwtService: JwtService,
+    @Inject(AUTHENTICATION_SESSION_REPOSITORY)
+    private readonly authenticationSessionRepository: AuthenticationSessionRepository,
+    @Inject(ACCESS_TOKEN_VERIFIER)
+    private readonly accessTokenVerifier: AccessTokenVerifier,
   ) {}
 
   async execute(data: LogoutRequest): Promise<LogoutResponse> {
     const updatedAt = new Date();
     const token = this.extractBearerToken(data.authorization);
-    const payload = await this.verifyToken(token);
-    const user = await this.loginRepository.findById(payload.sub);
+    const payload = await this.accessTokenVerifier.verify(token);
+    const identity =
+      await this.authenticationSessionRepository.findIdentityById(payload.sub);
 
-    if (!user) {
-      throw new UnauthorizedException('invalid token');
+    if (!identity) {
+      throw new InvalidTokenError();
     }
 
-    if (payload.tokenVersion !== user.tokenVersion) {
-      throw new UnauthorizedException('token already invalidated');
+    if (payload.ver !== identity.tokenVersion) {
+      throw new InvalidTokenError('token already invalidated');
     }
 
-    if (!payload.sessionId) {
-      throw new UnauthorizedException('invalid token');
+    if (!payload.sid) {
+      throw new InvalidTokenError();
     }
 
-    const sessionWasClosed = await this.loginRepository.deactivateSession(
-      user.id,
-      payload.sessionId,
-      updatedAt,
-    );
+    const sessionWasClosed =
+      await this.authenticationSessionRepository.deactivateSession(
+        identity.user.id,
+        payload.sid,
+        updatedAt,
+      );
 
     if (!sessionWasClosed) {
-      throw new UnauthorizedException('active session not found');
+      throw new InvalidTokenError('active session not found');
     }
 
-    await this.loginRepository.incrementTokenVersion(user.id);
+    await this.authenticationSessionRepository.incrementTokenVersion(
+      identity.user.id,
+    );
 
     return { success: true };
   }
 
   private extractBearerToken(authorization?: string): string {
     if (!authorization) {
-      throw new UnauthorizedException('authorization header is required');
+      throw new InvalidAuthorizationHeaderError(
+        'authorization header is required',
+      );
     }
 
     const [scheme, token] = authorization.split(' ');
 
     if (scheme !== 'Bearer' || !token) {
-      throw new UnauthorizedException('invalid authorization header');
+      throw new InvalidAuthorizationHeaderError();
     }
 
     return token;
-  }
-
-  private async verifyToken(token: string): Promise<AuthTokenPayload> {
-    try {
-      const payload: unknown = await this.jwtService.verifyAsync(token);
-
-      if (!this.isAuthTokenPayload(payload)) {
-        throw new UnauthorizedException('invalid token');
-      }
-
-      return payload;
-    } catch {
-      throw new UnauthorizedException('invalid token');
-    }
-  }
-
-  private isAuthTokenPayload(payload: unknown): payload is AuthTokenPayload {
-    if (typeof payload !== 'object' || payload === null) {
-      return false;
-    }
-
-    const candidate = payload as Record<string, unknown>;
-
-    return (
-      typeof candidate.sub === 'string' &&
-      (candidate.sessionId === undefined ||
-        typeof candidate.sessionId === 'string') &&
-      (candidate.tokenVersion === undefined ||
-        typeof candidate.tokenVersion === 'number')
-    );
   }
 }

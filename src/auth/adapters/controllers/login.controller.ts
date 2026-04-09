@@ -2,6 +2,7 @@ import { Body, Controller, Inject, Post } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBody,
+  ApiForbiddenResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -37,6 +38,9 @@ export class LoginController {
   })
   @ApiUnauthorizedResponse({
     description: 'Invalid credentials.',
+  })
+  @ApiForbiddenResponse({
+    description: 'User account cannot authenticate in its current status.',
   })
   @Post('login')
   async login(@Body() data: LoginDto): Promise<LoginResponse> {

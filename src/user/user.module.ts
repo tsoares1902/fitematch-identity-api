@@ -5,15 +5,18 @@ import { DeleteUserController } from '@src/user/adapters/controllers/delete-user
 import { ReadUserController } from '@src/user/adapters/controllers/read-user-controller';
 import { ListUsersController } from '@src/user/adapters/controllers/list-users.controller';
 import { UpdateUserController } from '@src/user/adapters/controllers/update-user.controller';
-import { UserEntity, UserSchema } from '@src/user/domains/schemas/user.schema';
+import {
+  UserPersistenceModel,
+  UserPersistenceSchema,
+} from '@src/user/adapters/persistence/mongoose/user.persistence';
 import { userProviders } from '@src/user/user.providers';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       {
-        name: UserEntity.name,
-        schema: UserSchema,
+        name: UserPersistenceModel.name,
+        schema: UserPersistenceSchema,
       },
     ]),
   ],

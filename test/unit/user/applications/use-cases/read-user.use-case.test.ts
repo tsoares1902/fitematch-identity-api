@@ -1,21 +1,18 @@
-import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { MASKS_UTILS } from '@src/shared/applications/utils/masks.utils';
-import { READ_USER_REPOSITORY_INTERFACE } from '@src/user/applications/contracts/read-user.repository-interface';
+import { UserNotFoundError } from '@src/user/applications/errors/user-not-found.error';
 import { ReadUserUseCase } from '@src/user/applications/use-cases/read-user.use-case';
+import {
+  ProductRoleEnum,
+  UserStatusEnum,
+  type User,
+} from '@src/user/domains/entities/user.entity';
+import { USER_QUERY_REPOSITORY } from '@src/user/domains/repositories/user-query.repository';
 
 describe('ReadUserUseCase', () => {
   let useCase: ReadUserUseCase;
 
-  const readUserRepositoryMock = {
+  const userQueryRepositoryMock = {
     findById: jest.fn(),
-  };
-
-  const masksUtilsMock = {
-    brazilPersonIdentityDocumentMask: jest.fn((value: string) => value),
-    brazilPersonSocialDocumentMask: jest.fn((value: string) => value),
-    brazilPhoneMask: jest.fn((value: string) => value),
-    brazilZipCodeMask: jest.fn((value: string) => value),
   };
 
   beforeEach(async () => {
@@ -25,12 +22,8 @@ describe('ReadUserUseCase', () => {
       providers: [
         ReadUserUseCase,
         {
-          provide: READ_USER_REPOSITORY_INTERFACE,
-          useValue: readUserRepositoryMock,
-        },
-        {
-          provide: MASKS_UTILS,
-          useValue: masksUtilsMock,
+          provide: USER_QUERY_REPOSITORY,
+          useValue: userQueryRepositoryMock,
         },
       ],
     }).compile();
@@ -43,33 +36,60 @@ describe('ReadUserUseCase', () => {
   });
 
   it('should return the user when found', async () => {
-    const expected = {
+    const createdAt = new Date('2024-01-01T00:00:00.000Z');
+    const updatedAt = new Date('2024-01-02T00:00:00.000Z');
+    const expected: User = {
       id: 'user-id',
-      isPaidMembership: false,
       firstName: 'John',
       lastName: 'Doe',
       email: 'john@example.com',
       birthday: '1990-01-01',
-      role: 'candidate',
-      status: 'enabled',
-      documents: {},
-      details: {},
-      social: {},
+      status: UserStatusEnum.ACTIVE,
+      productRole: ProductRoleEnum.CANDIDATE,
+      isInternal: false,
+      candidateProfile: {},
+      recruiterProfile: undefined,
+      createdAt,
+      updatedAt,
     };
 
-    readUserRepositoryMock.findById.mockResolvedValue(expected);
+    userQueryRepositoryMock.findById.mockResolvedValue(expected);
 
     await expect(useCase.execute('user-id')).resolves.toEqual({
-      data: expected,
+      data: {
+        id: 'user-id',
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john@example.com',
+        birthday: '1990-01-01',
+        status: UserStatusEnum.ACTIVE,
+        productRole: ProductRoleEnum.CANDIDATE,
+        adminRole: undefined,
+        permissions: undefined,
+        isInternal: false,
+        candidateProfile: {},
+        recruiterProfile: undefined,
+        emailVerifiedAt: undefined,
+        createdBy: undefined,
+        lastLoginAt: undefined,
+        suspendedAt: undefined,
+        suspendedReason: undefined,
+        deactivatedAt: undefined,
+        deactivatedReason: undefined,
+        bannedAt: undefined,
+        bannedReason: undefined,
+        createdAt,
+        updatedAt,
+      },
     });
-    expect(readUserRepositoryMock.findById).toHaveBeenCalledWith('user-id');
+    expect(userQueryRepositoryMock.findById).toHaveBeenCalledWith('user-id');
   });
 
   it('should throw when the user is not found', async () => {
-    readUserRepositoryMock.findById.mockResolvedValue(null);
+    userQueryRepositoryMock.findById.mockResolvedValue(null);
 
     await expect(useCase.execute('missing-id')).rejects.toThrow(
-      NotFoundException,
+      UserNotFoundError,
     );
   });
 });

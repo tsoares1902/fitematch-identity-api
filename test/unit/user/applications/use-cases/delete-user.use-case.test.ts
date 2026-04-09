@@ -1,13 +1,13 @@
-import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { DELETE_USER_REPOSITORY } from '@src/user/applications/contracts/delete-user.repository-interface';
+import { UserNotFoundError } from '@src/user/applications/errors/user-not-found.error';
 import { DeleteUserUseCase } from '@src/user/applications/use-cases/delete-user.use-case';
+import { USER_COMMAND_REPOSITORY } from '@src/user/domains/repositories/user-command.repository';
 
 describe('DeleteUserUseCase', () => {
   let useCase: DeleteUserUseCase;
 
-  const deleteUserRepositoryMock = {
-    delete: jest.fn(),
+  const userCommandRepositoryMock = {
+    deactivate: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -17,8 +17,8 @@ describe('DeleteUserUseCase', () => {
       providers: [
         DeleteUserUseCase,
         {
-          provide: DELETE_USER_REPOSITORY,
-          useValue: deleteUserRepositoryMock,
+          provide: USER_COMMAND_REPOSITORY,
+          useValue: userCommandRepositoryMock,
         },
       ],
     }).compile();
@@ -30,20 +30,22 @@ describe('DeleteUserUseCase', () => {
     expect(useCase).toBeDefined();
   });
 
-  it('should return success when the user is deleted', async () => {
-    deleteUserRepositoryMock.delete.mockResolvedValue(true);
+  it('should return success when the user is deactivated', async () => {
+    userCommandRepositoryMock.deactivate.mockResolvedValue(true);
 
     await expect(useCase.execute('user-id')).resolves.toEqual({
       success: true,
     });
-    expect(deleteUserRepositoryMock.delete).toHaveBeenCalledWith('user-id');
+    expect(userCommandRepositoryMock.deactivate).toHaveBeenCalledWith(
+      'user-id',
+    );
   });
 
   it('should throw when the user is not found', async () => {
-    deleteUserRepositoryMock.delete.mockResolvedValue(false);
+    userCommandRepositoryMock.deactivate.mockResolvedValue(false);
 
     await expect(useCase.execute('missing-id')).rejects.toThrow(
-      NotFoundException,
+      UserNotFoundError,
     );
   });
 });

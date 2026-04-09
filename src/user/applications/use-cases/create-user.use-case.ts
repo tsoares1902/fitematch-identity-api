@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import EncryptUtils from '@src/shared/applications/utils/encrypt.utils';
 import { UserStatusEnum } from '@src/user/applications/contracts/user-status.enum';
 import {
-  CREATE_USER_REPOSITORY,
+  CREATE_USER_REPOSITORY_INTERFACE,
   type CreateUserRepositoryInterface,
 } from '@src/user/applications/contracts/create-user.repository-interface';
 import type {
@@ -14,7 +14,7 @@ import type { ResultCreateUserUseCaseInterface } from '@src/user/applications/co
 @Injectable()
 export class CreateUserUseCase implements CreateUserUseCaseInterface {
   constructor(
-    @Inject(CREATE_USER_REPOSITORY)
+    @Inject(CREATE_USER_REPOSITORY_INTERFACE)
     private readonly createUserRepository: CreateUserRepositoryInterface,
     private readonly encryptUtils: EncryptUtils,
   ) {}
@@ -23,10 +23,13 @@ export class CreateUserUseCase implements CreateUserUseCaseInterface {
     data: CreateUserDataUseCaseInterface,
   ): Promise<ResultCreateUserUseCaseInterface> {
     const password = await this.encryptUtils.encryptPassword(data.password);
+    const legacyInput = data as CreateUserDataUseCaseInterface & {
+      isPaidMembership?: boolean;
+    };
 
     const user = await this.createUserRepository.createUser({
       ...data,
-      isPaidMembership: data.isPaidMembership ?? false,
+      isPaidMembership: legacyInput.isPaidMembership ?? false,
       password,
       status: data.status ?? UserStatusEnum.PENDING,
     });

@@ -1,45 +1,48 @@
-import { ConfigService } from '@nestjs/config';
-import { Controller, Get, Inject, Query } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Inject, Query, UseGuards } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
+import { JwtAuthGuard } from '@src/auth/adapters/guards/jwt-auth.guard';
+import { Permissions } from '@src/auth/adapters/decorators/permissions.decorator';
+import { Roles } from '@src/auth/adapters/decorators/roles.decorator';
+import { PermissionsGuard } from '@src/auth/adapters/guards/permissions.guard';
+import { RolesGuard } from '@src/auth/adapters/guards/roles.guard';
 import { ListUsersQueryDto } from '@src/user/adapters/dto/list-users-query.dto';
 import {
-  LIST_USERS_USE_CASE_INTERFACE,
-  type ListUsersUseCaseInterface,
-} from '@src/user/applications/contracts/list-users.use-case-interface';
+  LIST_USER_USE_CASE_INTERFACE,
+  type ListUserUseCaseInterface,
+} from '@src/user/applications/contracts/list-user.use-case-interface';
 import { ResponseListUsersDTO } from '../dto/responses/list-user-response.dto';
-import ListUserResponse from './responses/list-user.respomse';
+import {
+  AdminRoleEnum,
+  PermissionEnum,
+} from '@src/user/domains/entities/user.entity';
 
 @ApiTags('User')
 @Controller('user')
+@ApiBearerAuth('JWT')
+@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
 export class ListUsersController {
   constructor(
-    @Inject(LIST_USERS_USE_CASE_INTERFACE)
-    private readonly listUsersUseCase: ListUsersUseCaseInterface,
-    private readonly listUserResponse: ListUserResponse,
-    private readonly configService: ConfigService,
+    @Inject(LIST_USER_USE_CASE_INTERFACE)
+    private readonly listUsersUseCase: ListUserUseCaseInterface,
   ) {}
 
   @ApiOperation({
     summary: 'List users',
     description: 'Returns the list of registered users.',
   })
+  @Roles(AdminRoleEnum.STAFF, AdminRoleEnum.ADMIN, AdminRoleEnum.SUPER_ADMIN)
+  @Permissions(PermissionEnum.VIEW_USERS)
   @ApiOkResponse({
     description: 'Users listed successfully.',
     type: ResponseListUsersDTO,
   })
   @Get()
-  async handler(
-    @Query() data: ListUsersQueryDto,
-  ): Promise<ResponseListUsersDTO> {
-    try {
-      const result = await this.listUsersUseCase.execute({
-        ...data,
-        route: `${this.configService.get('IDENTITY_API_URL')}/user`,
-      });
-
-      return this.listUserResponse.response(result);
-    } catch (error: unknown) {
-      this.listUserResponse.catch(error);
-    }
+  list(@Query() data: ListUsersQueryDto): Promise<ResponseListUsersDTO> {
+    return this.listUsersUseCase.execute(data);
   }
 }
