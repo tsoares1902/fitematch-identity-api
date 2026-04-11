@@ -93,6 +93,58 @@ describe('LoginUseCase', () => {
         useCase.execute({ email: 'john@example.com', password: 'secret' }),
       ).rejects.toThrow(AuthenticationForbiddenError);
     });
+
+    it('should block login for suspended users', async () => {
+      authenticationRepositoryMock.findIdentityByEmail.mockResolvedValue(
+        buildIdentity({
+          user: { status: UserStatusEnum.SUSPENDED },
+        }),
+      );
+      passwordVerifierMock.verify.mockResolvedValue(true);
+
+      await expect(
+        useCase.execute({ email: 'john@example.com', password: 'secret' }),
+      ).rejects.toThrow('user account is suspended');
+    });
+
+    it('should block login for deactivated users', async () => {
+      authenticationRepositoryMock.findIdentityByEmail.mockResolvedValue(
+        buildIdentity({
+          user: { status: UserStatusEnum.DEACTIVATED },
+        }),
+      );
+      passwordVerifierMock.verify.mockResolvedValue(true);
+
+      await expect(
+        useCase.execute({ email: 'john@example.com', password: 'secret' }),
+      ).rejects.toThrow('user account is deactivated');
+    });
+
+    it('should block login for banned users', async () => {
+      authenticationRepositoryMock.findIdentityByEmail.mockResolvedValue(
+        buildIdentity({
+          user: { status: UserStatusEnum.BANNED },
+        }),
+      );
+      passwordVerifierMock.verify.mockResolvedValue(true);
+
+      await expect(
+        useCase.execute({ email: 'john@example.com', password: 'secret' }),
+      ).rejects.toThrow('user account is banned');
+    });
+
+    it('should block login for unknown statuses', async () => {
+      authenticationRepositoryMock.findIdentityByEmail.mockResolvedValue(
+        buildIdentity({
+          user: { status: 'unknown' as UserStatusEnum },
+        }),
+      );
+      passwordVerifierMock.verify.mockResolvedValue(true);
+
+      await expect(
+        useCase.execute({ email: 'john@example.com', password: 'secret' }),
+      ).rejects.toThrow(AuthenticationForbiddenError);
+    });
   });
 
   describe('session creation', () => {
@@ -125,8 +177,10 @@ describe('LoginUseCase', () => {
         },
       });
 
-      expect(authenticationRepositoryMock.createSession).toHaveBeenCalled();
-      expect(accessTokenIssuerMock.issue).toHaveBeenCalledWith({
+      expect(
+        authenticationRepositoryMock.createSession.mock.calls,
+      ).toHaveLength(1);
+      expect(accessTokenIssuerMock.issue.mock.calls[0]?.[0]).toEqual({
         sub: 'user-id',
         sid: expect.any(String),
         ver: 1,
@@ -134,6 +188,36 @@ describe('LoginUseCase', () => {
         pr: 'candidate',
         ar: undefined,
         perm: undefined,
+      });
+    });
+
+    it('should issue an internal token for internal users', async () => {
+      authenticationRepositoryMock.findIdentityByEmail.mockResolvedValue(
+        buildIdentity({
+          user: {
+            isInternal: true,
+            adminRole: 'admin' as never,
+            permissions: ['view_users'] as never,
+          },
+        }),
+      );
+      passwordVerifierMock.verify.mockResolvedValue(true);
+      authenticationRepositoryMock.createSession.mockResolvedValue();
+      accessTokenIssuerMock.issue.mockResolvedValue('token');
+
+      await useCase.execute({
+        email: 'john@example.com',
+        password: 'secret',
+      });
+
+      expect(accessTokenIssuerMock.issue.mock.calls[0]?.[0]).toEqual({
+        sub: 'user-id',
+        sid: expect.any(String),
+        ver: 1,
+        typ: 'internal',
+        pr: 'candidate',
+        ar: 'admin',
+        perm: ['view_users'],
       });
     });
   });

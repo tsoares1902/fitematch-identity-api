@@ -183,11 +183,11 @@ describe('LogoutUseCase', () => {
       ).resolves.toEqual({ success: true });
 
       expect(
-        authenticationSessionRepositoryMock.deactivateSession,
-      ).toHaveBeenCalled();
+        authenticationSessionRepositoryMock.deactivateSession.mock.calls,
+      ).toHaveLength(1);
       expect(
-        authenticationSessionRepositoryMock.incrementTokenVersion,
-      ).toHaveBeenCalledWith('user-id');
+        authenticationSessionRepositoryMock.incrementTokenVersion.mock.calls[0],
+      ).toEqual(['user-id']);
     });
   });
 });

@@ -9,6 +9,7 @@ import {
 } from '@nestjs/swagger';
 import { CreateUserDTO } from '@src/user/adapters/dto/create-user.dto';
 import { ResponseCreateUsersDTO } from '@src/user/adapters/dto/responses/create-user-response.dto';
+import { userInterfaceToPublicDto } from '@src/user/adapters/mappers/user-public.mapper';
 import {
   CREATE_USER_USE_CASE_INTERFACE,
   type CreateUserUseCaseInterface,
@@ -38,7 +39,8 @@ export class CreateUserController {
     description: 'email already exists.',
   })
   @Post()
-  async create(@Body() data: CreateUserDTO): Promise<ResponseCreateUsersDTO> {
-    return this.createUserUseCase.execute(data);
+  async handle(@Body() data: CreateUserDTO): Promise<ResponseCreateUsersDTO> {
+    const result = await this.createUserUseCase.execute(data);
+    return { data: userInterfaceToPublicDto(result.data) };
   }
 }

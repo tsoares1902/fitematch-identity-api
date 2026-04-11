@@ -34,7 +34,7 @@ export class ResendVerificationEmailController {
     description: 'Validation error in the submitted data.',
   })
   @Post('resend-verification-email')
-  async resendVerificationEmail(
+  async handle(
     @Body() data: ResendVerificationEmailDto,
   ): Promise<LogoutResponseDto> {
     return this.resendVerificationEmailUseCase.execute(data);

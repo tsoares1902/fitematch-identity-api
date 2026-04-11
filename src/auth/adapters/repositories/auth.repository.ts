@@ -33,10 +33,9 @@ import {
   UserPersistenceModel,
 } from '@src/user/adapters/persistence/mongoose/user.persistence';
 import { toDomainUser } from '@src/user/adapters/persistence/mappers/user-persistence.mapper';
-import { UserRoleEnum } from '@src/user/applications/contracts/user-role.enum';
 import { UserStatusEnum } from '@src/user/applications/contracts/user-status.enum';
 import {
-  ProductRoleEnum,
+  // ProductRoleEnum removido
   UserStatusEnum as DomainUserStatusEnum,
 } from '@src/user/domains/entities/user.entity';
 import { Model } from 'mongoose';
@@ -65,17 +64,11 @@ export class AuthRepository
       return null;
     }
 
+    const domainUser = toDomainUser(user);
     return {
+      ...domainUser,
       id: user._id.toString(),
-      role: this.toLegacyRole(user),
-      isPaidMembership: false,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      password: user.password,
       tokenVersion: user.tokenVersion ?? 0,
-      birthday: user.birthday ?? '',
-      status: this.toLegacyStatus(user.status),
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
@@ -121,17 +114,11 @@ export class AuthRepository
       return null;
     }
 
+    const domainUser = toDomainUser(user);
     return {
+      ...domainUser,
       id: user._id.toString(),
-      role: this.toLegacyRole(user),
-      isPaidMembership: false,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      password: user.password,
       tokenVersion: user.tokenVersion ?? 0,
-      birthday: user.birthday ?? '',
-      status: this.toLegacyStatus(user.status),
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
@@ -311,15 +298,6 @@ export class AuthRepository
       .exec();
 
     return Boolean(user);
-  }
-  private toLegacyRole(user: UserPersistenceDocument): UserRoleEnum {
-    if (user.isInternal || user.adminRole) {
-      return UserRoleEnum.ADMIN;
-    }
-
-    return user.productRole === ProductRoleEnum.RECRUITER
-      ? UserRoleEnum.RECRUITER
-      : UserRoleEnum.CANDIDATE;
   }
 
   private toLegacyStatus(status?: DomainUserStatusEnum): UserStatusEnum {

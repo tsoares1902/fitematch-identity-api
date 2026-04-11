@@ -36,7 +36,7 @@ export class ListSessionsController {
     isArray: true,
   })
   @Get('sessions/:userId')
-  async listByUserId(
+  async handle(
     @Param('userId') userId: string,
   ): Promise<SessionRecordResponse[]> {
     return this.listSessionsUseCase.execute(userId);

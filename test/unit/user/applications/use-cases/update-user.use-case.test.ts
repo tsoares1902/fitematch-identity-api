@@ -1,12 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { UPDATE_USER_REPOSITORY } from '@src/user/applications/contracts/update-user.repository-interface';
 import { UserNotFoundError } from '@src/user/applications/errors/user-not-found.error';
 import { UpdateUserUseCase } from '@src/user/applications/use-cases/update-user.use-case';
 import {
   ProductRoleEnum,
   UserStatusEnum,
-  type User,
 } from '@src/user/domains/entities/user.entity';
-import { USER_COMMAND_REPOSITORY } from '@src/user/domains/repositories/user-command.repository';
 
 describe('UpdateUserUseCase', () => {
   let useCase: UpdateUserUseCase;
@@ -22,7 +21,7 @@ describe('UpdateUserUseCase', () => {
       providers: [
         UpdateUserUseCase,
         {
-          provide: USER_COMMAND_REPOSITORY,
+          provide: UPDATE_USER_REPOSITORY,
           useValue: userCommandRepositoryMock,
         },
       ],
@@ -39,7 +38,7 @@ describe('UpdateUserUseCase', () => {
     const createdAt = new Date('2024-01-01T00:00:00.000Z');
     const updatedAt = new Date('2024-01-02T00:00:00.000Z');
     const data = { firstName: 'Jane' };
-    const expected: User = {
+    const expected = {
       id: 'user-id',
       firstName: 'Jane',
       lastName: 'Doe',
@@ -80,9 +79,10 @@ describe('UpdateUserUseCase', () => {
         updatedAt,
       },
     });
-    expect(userCommandRepositoryMock.update).toHaveBeenCalledWith('user-id', {
-      user: data,
-    });
+    expect(userCommandRepositoryMock.update).toHaveBeenCalledWith(
+      'user-id',
+      data,
+    );
   });
 
   it('should throw when the user is not found', async () => {

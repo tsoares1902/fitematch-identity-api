@@ -34,9 +34,7 @@ export class ResetPasswordController {
     description: 'Invalid or expired reset token.',
   })
   @Post('reset-password')
-  async resetPassword(
-    @Body() data: ResetPasswordDto,
-  ): Promise<LogoutResponseDto> {
+  async handle(@Body() data: ResetPasswordDto): Promise<LogoutResponseDto> {
     return this.resetPasswordUseCase.execute(data);
   }
 }

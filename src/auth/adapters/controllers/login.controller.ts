@@ -43,7 +43,7 @@ export class LoginController {
     description: 'User account cannot authenticate in its current status.',
   })
   @Post('login')
-  async login(@Body() data: LoginDto): Promise<LoginResponse> {
+  async handle(@Body() data: LoginDto): Promise<LoginResponse> {
     return this.loginUseCase.execute(data);
   }
 }

@@ -513,23 +513,18 @@ export class CreateUserDto {
   @MaxLength(128)
   password!: string;
 
+  // Optional fields from UserInterface
   @ApiPropertyOptional({ example: '1994-01-01' })
   @IsOptional()
   @IsDateString()
   birthday?: string;
 
-  @ApiPropertyOptional({
-    example: UserStatusEnum.PENDING_EMAIL_VERIFICATION,
-    enum: UserStatusEnum,
-  })
+  @ApiPropertyOptional({ enum: UserStatusEnum })
   @IsOptional()
   @IsEnum(UserStatusEnum)
   status?: UserStatusEnum;
 
-  @ApiPropertyOptional({
-    example: ProductRoleEnum.CANDIDATE,
-    enum: ProductRoleEnum,
-  })
+  @ApiPropertyOptional({ enum: ProductRoleEnum })
   @IsOptional()
   @IsEnum(ProductRoleEnum)
   productRole?: ProductRoleEnum;
@@ -547,6 +542,244 @@ export class CreateUserDto {
   @ValidateNested()
   @Type(() => RecruiterProfileInputDto)
   recruiterProfile?: RecruiterProfileInputDto;
+
+  // Additional optional fields from UserInterface
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  id?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsDateString()
+  createdAt?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsDateString()
+  updatedAt?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  createdBy?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  updatedBy?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  isDeleted?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  isEmailVerified?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  lastLoginAt?: string;
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  notes?: string[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  externalId?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  username?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  avatarUrl?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  referralCode?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  invitedBy?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  invitationAcceptedAt?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  invitationSentAt?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  invitationStatus?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  emailVerifiedAt?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  deletedAt?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  deletedBy?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  lastPasswordChangeAt?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  lastPasswordChangeBy?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  lastStatusChangeAt?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  lastStatusChangeBy?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  lastProductRoleChangeAt?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  lastProductRoleChangeBy?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  lastEmailChangeAt?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  lastEmailChangeBy?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  lastPhoneChangeAt?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  lastPhoneChangeBy?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  lastAvatarChangeAt?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  lastAvatarChangeBy?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  lastReferralCodeChangeAt?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  lastReferralCodeChangeBy?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  lastInvitedByChangeAt?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  lastInvitedByChangeBy?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  lastInvitationStatusChangeAt?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  lastInvitationStatusChangeBy?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  lastEmailVerifiedAtChangeAt?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  lastEmailVerifiedAtChangeBy?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  lastDeletedAtChangeAt?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  lastDeletedAtChangeBy?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  lastDeletedByChangeAt?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  lastDeletedByChangeBy?: string;
 }
 
 export class CreateInternalUserDto extends CreateUserDto {
@@ -565,6 +798,8 @@ export class CreateInternalUserDto extends CreateUserDto {
   @IsOptional()
   @IsBoolean()
   isInternal?: boolean;
+
+  // Internal users may also have all optional fields from UserInterface (already inherited)
 }
 
 export {

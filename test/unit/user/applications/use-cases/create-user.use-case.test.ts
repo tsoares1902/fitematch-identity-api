@@ -59,9 +59,34 @@ describe('CreateUserUseCase', () => {
     expect(encryptUtilsMock.encryptPassword).toHaveBeenCalledWith('secret');
     expect(createUserRepositoryMock.createUser).toHaveBeenCalledWith({
       ...data,
-      isPaidMembership: false,
       password: 'hashed-password',
       status: UserStatusEnum.PENDING,
+    });
+  });
+
+  it('should preserve the provided status', async () => {
+    const data = {
+      role: 'candidate',
+      firstName: 'John',
+      lastName: 'Doe',
+      email: 'john@example.com',
+      password: 'secret',
+      status: UserStatusEnum.ENABLED,
+    };
+
+    encryptUtilsMock.encryptPassword.mockResolvedValue('hashed-password');
+    createUserRepositoryMock.createUser.mockResolvedValue({
+      id: 'user-id',
+      ...data,
+      password: 'hashed-password',
+    });
+
+    await useCase.execute(data as never);
+
+    expect(createUserRepositoryMock.createUser).toHaveBeenCalledWith({
+      ...data,
+      password: 'hashed-password',
+      status: UserStatusEnum.ENABLED,
     });
   });
 });

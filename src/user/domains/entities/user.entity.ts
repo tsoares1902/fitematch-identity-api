@@ -1,7 +1,3 @@
-// =========================
-// CORE ENUMS
-// =========================
-
 export enum UserStatusEnum {
   PENDING_EMAIL_VERIFICATION = 'pending_email_verification', // User exists but has not verified email yet
   ACTIVE = 'active', // User is active and allowed to use the product
@@ -38,10 +34,6 @@ export enum PermissionEnum {
   IMPERSONATE_USERS = 'impersonate_users', // Allows impersonating another user
   MANAGE_SYSTEM_SETTINGS = 'manage_system_settings', // Allows changing system settings
 }
-
-// =========================
-// SUPPORTING ENUMS
-// =========================
 
 export enum EthnicityEnum {
   WHITE = 'white', // White
@@ -145,10 +137,6 @@ export enum WorkModelEnum {
   REMOTE = 'remote', // Remote work
   HYBRID = 'hybrid', // Hybrid work
 }
-
-// =========================
-// SUPPORTING TYPES
-// =========================
 
 export interface Documents {
   identityDocumentNumber?: string; // Identity document number

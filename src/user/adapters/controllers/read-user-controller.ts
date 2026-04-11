@@ -17,6 +17,7 @@ import {
   type ReadUserUseCaseInterface,
 } from '@src/user/applications/contracts/read-user.use-case-interface';
 import { ResponseReadUserDTO } from '../dto/responses/read-user-response.dto';
+import { userInterfaceToPublicDto } from '../mappers/user-public.mapper';
 import {
   AdminRoleEnum,
   PermissionEnum,
@@ -47,7 +48,8 @@ export class ReadUserController {
     description: 'User not found!',
   })
   @Get(':id')
-  async findById(@Param('id') id: string): Promise<ResponseReadUserDTO> {
-    return this.readUserUseCase.execute(id);
+  async handle(@Param('id') id: string): Promise<ResponseReadUserDTO> {
+    const result = await this.readUserUseCase.execute(id);
+    return { data: userInterfaceToPublicDto(result.data) };
   }
 }

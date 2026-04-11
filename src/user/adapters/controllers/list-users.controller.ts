@@ -42,7 +42,10 @@ export class ListUsersController {
     type: ResponseListUsersDTO,
   })
   @Get()
-  list(@Query() data: ListUsersQueryDto): Promise<ResponseListUsersDTO> {
-    return this.listUsersUseCase.execute(data);
+  async handle(
+    @Query() data: ListUsersQueryDto,
+  ): Promise<ResponseListUsersDTO> {
+    const result = await this.listUsersUseCase.execute(data);
+    return ResponseListUsersDTO.fromUseCaseResult(result);
   }
 }

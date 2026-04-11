@@ -3,6 +3,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
 import { ListSessionsController } from '@src/auth/adapters/controllers/list-sessions.controller';
+import { MeController } from '@src/auth/adapters/controllers/me.controller';
 import { ForgotPasswordController } from '@src/auth/adapters/controllers/forgot-password.controller';
 import { LoginController } from '@src/auth/adapters/controllers/login.controller';
 import { LogoutController } from '@src/auth/adapters/controllers/logout.controller';
@@ -18,9 +19,11 @@ import {
   UserPersistenceModel,
   UserPersistenceSchema,
 } from '@src/user/adapters/persistence/mongoose/user.persistence';
+import { UserModule } from '@src/user/user.module';
 
 @Module({
   imports: [
+    UserModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
       secret: process.env.JWT_SECRET ?? 'dev-secret-change-me',
@@ -41,6 +44,7 @@ import {
   ],
   controllers: [
     LoginController,
+    MeController,
     LogoutController,
     ListSessionsController,
     ForgotPasswordController,

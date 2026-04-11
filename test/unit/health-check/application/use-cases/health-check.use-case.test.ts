@@ -26,4 +26,22 @@ describe('HealthCheckUseCase', () => {
     expect(useCase.execute()).toBeDefined();
     expect(useCase.execute()).toMatchObject(expected);
   });
+
+  it('should fallback to the default version when npm_package_version is missing', () => {
+    const currentVersion = process.env.npm_package_version;
+    delete process.env.npm_package_version;
+
+    expect(useCase.execute()).toMatchObject({
+      healthy: true,
+      name: 'API',
+      version: '0.0.1',
+    });
+
+    if (currentVersion === undefined) {
+      delete process.env.npm_package_version;
+      return;
+    }
+
+    process.env.npm_package_version = currentVersion;
+  });
 });

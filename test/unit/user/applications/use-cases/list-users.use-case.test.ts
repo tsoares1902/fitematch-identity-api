@@ -46,9 +46,7 @@ describe('ListUsersUseCase', () => {
       data: [],
       pagination: {
         totalItems: 0,
-        itemCount: 0,
         itemsPerPage: 10,
-        totalPages: 0,
         currentPage: 1,
       },
     });
@@ -116,11 +114,53 @@ describe('ListUsersUseCase', () => {
       ],
       pagination: {
         totalItems: 1,
-        itemCount: 1,
         itemsPerPage: 10,
-        totalPages: 1,
         currentPage: 1,
       },
+    });
+  });
+
+  it('should expose the private mapper through the current use case implementation', () => {
+    const createdAt = new Date('2024-01-01T00:00:00.000Z');
+    const updatedAt = new Date('2024-01-02T00:00:00.000Z');
+    const user: User = {
+      id: 'user-id',
+      firstName: 'John',
+      lastName: 'Doe',
+      email: 'john@example.com',
+      status: UserStatusEnum.ACTIVE,
+      createdAt,
+      updatedAt,
+    };
+
+    expect(
+      (useCase as unknown as { toOutput: (value: User) => unknown }).toOutput(
+        user,
+      ),
+    ).toEqual({
+      id: 'user-id',
+      firstName: 'John',
+      lastName: 'Doe',
+      email: 'john@example.com',
+      birthday: undefined,
+      status: UserStatusEnum.ACTIVE,
+      productRole: undefined,
+      adminRole: undefined,
+      permissions: undefined,
+      isInternal: undefined,
+      candidateProfile: undefined,
+      recruiterProfile: undefined,
+      emailVerifiedAt: undefined,
+      createdBy: undefined,
+      lastLoginAt: undefined,
+      suspendedAt: undefined,
+      suspendedReason: undefined,
+      deactivatedAt: undefined,
+      deactivatedReason: undefined,
+      bannedAt: undefined,
+      bannedReason: undefined,
+      createdAt,
+      updatedAt,
     });
   });
 });

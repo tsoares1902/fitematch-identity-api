@@ -5,27 +5,25 @@ import type {
 } from '@src/user/applications/contracts/update-user.use-case-interface';
 import type { ResultUpdateUserUseCaseInterface } from '@src/user/applications/contracts/result-update-user.use-case.interface';
 import {
-  USER_COMMAND_REPOSITORY,
-  type UserCommandRepository,
-} from '@src/user/domains/repositories/user-command.repository';
+  UPDATE_USER_REPOSITORY,
+  type UpdateUserRepositoryInterface,
+} from '@src/user/applications/contracts/update-user.repository-interface';
 import type { ReadUserOutputDto } from '@src/user/applications/contracts/result-read-user.use-case.interface';
-import type { User } from '@src/user/domains/entities/user.entity';
+import type { UserRecord } from '@src/user/applications/contracts/user-record.interface';
 import { UserNotFoundError } from '@src/user/applications/errors/user-not-found.error';
 
 @Injectable()
 export class UpdateUserUseCase implements UpdateUserUseCaseInterface {
   constructor(
-    @Inject(USER_COMMAND_REPOSITORY)
-    private readonly userCommandRepository: UserCommandRepository,
+    @Inject(UPDATE_USER_REPOSITORY)
+    private readonly updateUserRepository: UpdateUserRepositoryInterface,
   ) {}
 
   async execute(
     id: string,
     data: UpdateUserDataUseCaseInterface,
   ): Promise<ResultUpdateUserUseCaseInterface> {
-    const user = await this.userCommandRepository.update(id, {
-      user: data,
-    });
+    const user = await this.updateUserRepository.update(id, data);
 
     if (!user) {
       throw new UserNotFoundError('User not found.');
@@ -34,7 +32,7 @@ export class UpdateUserUseCase implements UpdateUserUseCaseInterface {
     return { data: this.toOutput(user) };
   }
 
-  private toOutput(user: User): ReadUserOutputDto {
+  private toOutput(user: UserRecord): ReadUserOutputDto {
     return {
       id: user.id,
       firstName: user.firstName,

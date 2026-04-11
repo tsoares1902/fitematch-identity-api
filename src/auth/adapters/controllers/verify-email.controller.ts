@@ -34,7 +34,7 @@ export class VerifyEmailController {
     description: 'Invalid or expired verification token.',
   })
   @Post('verify-email')
-  async verifyEmail(@Body() data: VerifyEmailDto): Promise<LogoutResponseDto> {
+  async handle(@Body() data: VerifyEmailDto): Promise<LogoutResponseDto> {
     return this.verifyEmailUseCase.execute(data);
   }
 }

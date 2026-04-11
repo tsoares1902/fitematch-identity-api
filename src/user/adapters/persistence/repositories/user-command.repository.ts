@@ -1,10 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import {
-  handleDuplicateKeyError,
-  toLegacyUserRecord,
-  toPersistenceWriteModel,
-} from '@src/user/adapters/persistence/repositories/user-persistence.helpers';
+import { toPersistenceWriteModel } from '@src/user/adapters/persistence/repositories/user-persistence.helpers';
 import {
   type UserPersistenceDocument,
   UserPersistenceModel,
@@ -12,14 +8,16 @@ import {
 import type { CreateUserRepositoryInterface } from '@src/user/applications/contracts/create-user.repository-interface';
 import type { DeleteUserRepositoryInterface } from '@src/user/applications/contracts/delete-user.repository-interface';
 import type { UpdateUserRepositoryInterface } from '@src/user/applications/contracts/update-user.repository-interface';
-import type { User } from '@src/user/applications/contracts/user.interface';
 import type { UpdateUserDataUseCaseInterface } from '@src/user/applications/contracts/update-user.use-case-interface';
-import type {
-  CreateUserCommand,
-  UpdateUserCommand,
-  UserCommandRepository,
-} from '@src/user/domains/repositories/user-command.repository';
+import type { UserRecord } from '@src/user/applications/contracts/user-record.interface';
+// imports removidos pois não são mais usados
+// Interfaces do domínio removidas, só use-case
 import { toDomainUser } from '@src/user/adapters/persistence/mappers/user-persistence.mapper';
+import type {
+  UserCommandRepository,
+  UpdateUserCommand,
+} from '@src/user/domains/repositories/user-command.repository';
+import type { User } from '@src/user/domains/entities/user.entity';
 import { Model } from 'mongoose';
 
 @Injectable()
@@ -35,84 +33,53 @@ export class UserCommandRepositoryAdapter
     private readonly userModel: Model<UserPersistenceDocument>,
   ) {}
 
-  async createUser(data: User) {
-    try {
-      const user = await this.userModel.create(toPersistenceWriteModel(data));
-      return toLegacyUserRecord(user);
-    } catch (error) {
-      handleDuplicateKeyError(error);
-      throw error;
-    }
+  async createUser(
+    data: import('@src/user/applications/contracts/create-user.use-case-interface').CreateUserDataUseCaseInterface,
+  ): Promise<
+    import('@src/user/applications/contracts/user-record.interface').UserRecord
+  > {
+    const user = await this.userModel.create(toPersistenceWriteModel(data));
+    return toDomainUser(
+      user,
+    ) as import('@src/user/applications/contracts/user-record.interface').UserRecord;
   }
 
-  async create(command: CreateUserCommand) {
-    try {
-      const user = await this.userModel.create({
-        ...command.user,
-        ...toPersistenceWriteModel({}),
-        firstName: command.user.firstName,
-        lastName: command.user.lastName,
-        email: command.user.email,
-        birthday: command.user.birthday,
-        status: command.user.status,
-        productRole: command.user.productRole,
-        adminRole: command.user.adminRole,
-        permissions: command.user.permissions,
-        isInternal: command.user.isInternal,
-        candidateProfile: command.user.candidateProfile,
-        recruiterProfile: command.user.recruiterProfile,
-        emailVerifiedAt: command.user.emailVerifiedAt,
-        createdBy: command.user.createdBy,
-        lastLoginAt: command.user.lastLoginAt,
-        suspendedAt: command.user.suspendedAt,
-        suspendedReason: command.user.suspendedReason,
-        deactivatedAt: command.user.deactivatedAt,
-        deactivatedReason: command.user.deactivatedReason,
-        bannedAt: command.user.bannedAt,
-        bannedReason: command.user.bannedReason,
-        password: command.passwordHash,
-        tokenVersion: command.tokenVersion ?? 0,
-      });
+  // Método create do domínio removido, só use-case
 
-      return toDomainUser(user);
-    } catch (error) {
-      handleDuplicateKeyError(error);
-      throw error;
-    }
-  }
-
-  async update(id: string, data: UpdateUserDataUseCaseInterface);
-  async update(id: string, command: UpdateUserCommand);
   async update(
     id: string,
-    data: UpdateUserDataUseCaseInterface | UpdateUserCommand,
-  ) {
-    const payload =
-      'user' in data
-        ? this.toDomainPersistenceWriteModel(data.user)
-        : toPersistenceWriteModel(data);
+    data: UpdateUserDataUseCaseInterface,
+  ): Promise<UserRecord | null>;
+  async update(id: string, command: UpdateUserCommand): Promise<User | null>;
+  async update(
+    id: string,
+    dataOrCommand: UpdateUserDataUseCaseInterface | UpdateUserCommand,
+  ): Promise<UserRecord | User | null> {
+    const payload = toPersistenceWriteModel(
+      'user' in dataOrCommand ? dataOrCommand.user : dataOrCommand,
+    );
+    const user = await this.userModel
+      .findByIdAndUpdate(id, payload, {
+        returnDocument: 'after',
+        runValidators: true,
+      })
+      .exec();
 
-    try {
-      const user = await this.userModel
-        .findByIdAndUpdate(id, payload, {
-          returnDocument: 'after',
-          runValidators: true,
-        })
-        .exec();
-
-      if (!user) {
-        return null;
-      }
-
-      if ('user' in data) {
-        return toDomainUser(user);
-      }
-
-      return toLegacyUserRecord(user);
-    } catch (error) {
-      handleDuplicateKeyError(error);
-      throw error;
+    if (!user) {
+      return null;
     }
+
+    return toDomainUser(user);
+  }
+  async create(
+    command: import('@src/user/domains/repositories/user-command.repository').CreateUserCommand,
+  ): Promise<User> {
+    const user = await this.userModel.create({
+      ...command.user,
+      password: command.passwordHash,
+      tokenVersion: command.tokenVersion ?? 0,
+    });
+    return toDomainUser(user);
   }
 
   async delete(id: string): Promise<boolean> {
@@ -134,34 +101,5 @@ export class UserCommandRepositoryAdapter
       .exec();
 
     return Boolean(user);
-  }
-
-  private toDomainPersistenceWriteModel(
-    user: UpdateUserCommand['user'],
-  ): Record<string, unknown> {
-    return Object.fromEntries(
-      Object.entries({
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        birthday: user.birthday,
-        status: user.status,
-        productRole: user.productRole,
-        adminRole: user.adminRole,
-        permissions: user.permissions,
-        isInternal: user.isInternal,
-        candidateProfile: user.candidateProfile,
-        recruiterProfile: user.recruiterProfile,
-        emailVerifiedAt: user.emailVerifiedAt,
-        createdBy: user.createdBy,
-        lastLoginAt: user.lastLoginAt,
-        suspendedAt: user.suspendedAt,
-        suspendedReason: user.suspendedReason,
-        deactivatedAt: user.deactivatedAt,
-        deactivatedReason: user.deactivatedReason,
-        bannedAt: user.bannedAt,
-        bannedReason: user.bannedReason,
-      }).filter(([, value]) => value !== undefined),
-    );
   }
 }

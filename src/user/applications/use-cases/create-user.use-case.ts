@@ -23,17 +23,11 @@ export class CreateUserUseCase implements CreateUserUseCaseInterface {
     data: CreateUserDataUseCaseInterface,
   ): Promise<ResultCreateUserUseCaseInterface> {
     const password = await this.encryptUtils.encryptPassword(data.password);
-    const legacyInput = data as CreateUserDataUseCaseInterface & {
-      isPaidMembership?: boolean;
-    };
-
     const user = await this.createUserRepository.createUser({
       ...data,
-      isPaidMembership: legacyInput.isPaidMembership ?? false,
       password,
       status: data.status ?? UserStatusEnum.PENDING,
     });
-
     return { data: user };
   }
 }

@@ -1,11 +1,7 @@
 import type {
-  AdminRoleEnum,
-  CandidateProfile,
-  PermissionEnum,
-  ProductRoleEnum,
-  RecruiterProfile,
-  UserStatusEnum,
-} from '@src/user/domains/entities/user.entity';
+  CandidateProfileInterface,
+  RecruiterProfileInterface,
+} from './user.interface';
 import type { ResultUpdateUserUseCaseInterface } from './result-update-user.use-case.interface';
 
 export const UPDATE_USER_USE_CASE_INTERFACE = 'UPDATE_USER_USE_CASE_INTERFACE';
@@ -15,13 +11,13 @@ export interface UpdateUserDataUseCaseInterface {
   lastName?: string;
   email?: string;
   birthday?: string;
-  status?: UserStatusEnum;
-  productRole?: ProductRoleEnum;
-  adminRole?: AdminRoleEnum;
-  permissions?: PermissionEnum[];
+  status?: string;
+  productRole?: string;
+  adminRole?: string;
+  permissions?: string[];
   isInternal?: boolean;
-  candidateProfile?: CandidateProfile;
-  recruiterProfile?: RecruiterProfile;
+  candidateProfile?: CandidateProfileInterface;
+  recruiterProfile?: RecruiterProfileInterface;
   emailVerifiedAt?: string;
   createdBy?: string;
   lastLoginAt?: string;

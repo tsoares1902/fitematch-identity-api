@@ -12,6 +12,7 @@ import { CREATE_USER_USE_CASE_INTERFACE } from '@src/user/applications/contracts
 import { READ_USER_USE_CASE_INTERFACE } from '@src/user/applications/contracts/read-user.use-case-interface';
 import { UPDATE_USER_USE_CASE_INTERFACE } from '@src/user/applications/contracts/update-user.use-case-interface';
 import { DELETE_USER_USE_CASE_INTERFACE } from '@src/user/applications/contracts/delete-user.use-case-interface';
+import { UPDATE_USER_REPOSITORY } from '@src/user/applications/contracts/update-user.repository-interface';
 import { USER_COMMAND_REPOSITORY } from '@src/user/domains/repositories/user-command.repository';
 import { USER_QUERY_REPOSITORY } from '@src/user/domains/repositories/user-query.repository';
 
@@ -41,6 +42,10 @@ export const userProviders = [
   },
   {
     provide: CREATE_USER_REPOSITORY_INTERFACE,
+    useExisting: UserCommandRepositoryAdapter,
+  },
+  {
+    provide: UPDATE_USER_REPOSITORY,
     useExisting: UserCommandRepositoryAdapter,
   },
   {

@@ -1,13 +1,16 @@
-import type { UserRoleEnum } from './user-role.enum';
-import type { UserStatusEnum } from './user-status.enum';
-
-export interface UserDocuments {
-  identityDocument?: string;
-  socialDocument?: string;
-  otherDocumentt?: string;
+export interface DocumentsInterface {
+  identityDocumentNumber?: string;
+  identityIssuer?: string;
+  identityState?: string;
+  socialDocumentNumber?: string;
+  passportNumber?: string;
+  passportCountry?: string;
+  passportExpirationDate?: string;
+  crefNumber?: string;
+  crefState?: string;
 }
 
-export interface ContactDetails {
+export interface ContactsInterface {
   phone?: string;
   isWhatsapp?: boolean;
   isTelegram?: boolean;
@@ -21,25 +24,122 @@ export interface ContactDetails {
   zipCode?: string;
 }
 
-export interface SocialMedias {
-  facebook?: string;
-  x?: string;
+export interface SocialInterface {
   instagram?: string;
   linkedin?: string;
-  whatsapp?: string;
-  telegram?: string;
+  youtube?: string;
+  website?: string;
 }
 
-export interface User {
-  isPaidMembership: boolean;
+export interface DemographicsInterface {
+  ethnicity?: string;
+  sexualOrientation?: string;
+  genderIdentity?: string;
+}
+
+export interface PhysicalProfileInterface {
+  heightCm?: number;
+  weightKg?: number;
+}
+
+export interface UniformSizesInterface {
+  tShirt?: string;
+  shorts?: string;
+  pants?: string;
+  shoeSizeBr?: number;
+}
+
+export interface ProfessionalProfileInterface {
+  headline?: string;
+  bio?: string;
+  yearsOfExperience?: number;
+  specialties?: string[];
+  employmentTypes?: string[];
+  workShifts?: string[];
+}
+
+export interface EducationInterface {
+  level?: string;
+  status?: string;
+  courseType?: string;
+  courseName?: string;
+  institution?: string;
+  startYear?: number;
+  conclusionYear?: number;
+  expectedConclusionYear?: number;
+  isCurrentlyStudying?: boolean;
+}
+
+export interface CertificationInterface {
+  name: string;
+  issuer?: string;
+  issueDate?: string;
+  expirationDate?: string;
+}
+
+export interface AvailabilityInterface {
+  availableDays?: string[];
+  availableShifts?: string[];
+  acceptsWeekends?: boolean;
+}
+
+export interface LocationPreferencesInterface {
+  preferredCities?: string[];
+  preferredStates?: string[];
+  workModels?: string[];
+}
+
+export interface ProfessionalMediaInterface {
+  profilePictureUrl?: string;
+  resumeUrl?: string;
+  videoUrl?: string;
+}
+
+export interface CandidateProfileInterface {
+  documents?: DocumentsInterface;
+  contacts?: ContactsInterface;
+  social?: SocialInterface;
+  demographics?: DemographicsInterface;
+  physicalProfile?: PhysicalProfileInterface;
+  uniformSizes?: UniformSizesInterface;
+  professionalProfile?: ProfessionalProfileInterface;
+  educations?: EducationInterface[];
+  certifications?: CertificationInterface[];
+  availability?: AvailabilityInterface;
+  locationPreferences?: LocationPreferencesInterface;
+  professionalMedia?: ProfessionalMediaInterface;
+}
+
+export interface RecruiterProfileInterface {
+  companyName?: string;
+  companyDocument?: string;
+  position?: string;
+  phone?: string;
+  website?: string;
+}
+
+export interface UserInterface {
+  id?: string;
   firstName: string;
   lastName: string;
   email: string;
-  password: string;
-  birthday: string;
-  role: UserRoleEnum;
-  status: UserStatusEnum;
-  documents?: UserDocuments;
-  details?: ContactDetails;
-  social?: SocialMedias;
+  birthday?: string;
+  status: string;
+  productRole?: string;
+  adminRole?: string;
+  permissions?: string[];
+  isInternal?: boolean;
+  candidateProfile?: CandidateProfileInterface;
+  recruiterProfile?: RecruiterProfileInterface;
+  emailVerifiedAt?: string;
+  createdBy?: string;
+  lastLoginAt?: string;
+  suspendedAt?: string;
+  suspendedReason?: string;
+  deactivatedAt?: string;
+  deactivatedReason?: string;
+  bannedAt?: string;
+  bannedReason?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }

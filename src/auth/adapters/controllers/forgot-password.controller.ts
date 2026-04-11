@@ -34,9 +34,7 @@ export class ForgotPasswordController {
     description: 'Validation error in the submitted data.',
   })
   @Post('forgot-password')
-  async forgotPassword(
-    @Body() data: ForgotPasswordDto,
-  ): Promise<LogoutResponseDto> {
+  async handle(@Body() data: ForgotPasswordDto): Promise<LogoutResponseDto> {
     return this.forgotPasswordUseCase.execute(data);
   }
 }

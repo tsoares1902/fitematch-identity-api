@@ -28,6 +28,7 @@ import {
   type UpdateUserUseCaseInterface,
 } from '@src/user/applications/contracts/update-user.use-case-interface';
 import { ResponseUpdateUserDTO } from '../dto/responses/update-user-response.dto';
+import { userInterfaceToPublicDto } from '../mappers/user-public.mapper';
 import {
   AdminRoleEnum,
   PermissionEnum,
@@ -65,10 +66,11 @@ export class UpdateUserController {
     description: 'User not found.',
   })
   @Patch(':id')
-  async update(
+  async handle(
     @Param('id') id: string,
     @Body() data: UpdateUserDto,
   ): Promise<ResponseUpdateUserDTO> {
-    return this.updateUserUseCase.execute(id, data);
+    const result = await this.updateUserUseCase.execute(id, data);
+    return { data: userInterfaceToPublicDto(result.data) };
   }
 }

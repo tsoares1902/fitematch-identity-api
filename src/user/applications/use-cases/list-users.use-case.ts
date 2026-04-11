@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type { ListUsersUseCaseInterface } from '@src/user/applications/contracts/list-user.use-case-interface';
+import type { ListUserUseCaseInterface } from '@src/user/applications/contracts/list-user.use-case-interface';
 import type {
   ListUsersOutputDto,
   ResultListUserUseCaseInterface,
@@ -10,9 +10,10 @@ import {
   type UserQueryRepository,
 } from '@src/user/domains/repositories/user-query.repository';
 import type { User } from '@src/user/domains/entities/user.entity';
+import { userToInterface } from '@src/user/applications/mappers/user-to-interface.mapper';
 
 @Injectable()
-export class ListUsersUseCase implements ListUsersUseCaseInterface {
+export class ListUsersUseCase implements ListUserUseCaseInterface {
   constructor(
     @Inject(USER_QUERY_REPOSITORY)
     private readonly userQueryRepository: UserQueryRepository,
@@ -21,6 +22,7 @@ export class ListUsersUseCase implements ListUsersUseCaseInterface {
   async execute(
     filters: ListUserQueryInterface,
   ): Promise<ResultListUserUseCaseInterface> {
+    // Ajustar o tipo do filtro status para UserStatusEnum se necessário
     const {
       data: users,
       totalItems,
@@ -28,43 +30,20 @@ export class ListUsersUseCase implements ListUsersUseCaseInterface {
       itemsPerPage,
     } = await this.userQueryRepository.list(filters);
 
+    // Converter todos os usuários para UserInterface
+    const userInterfaces = users.map(userToInterface);
+
     return {
-      data: users.map((user) => this.toOutput(user)),
+      data: userInterfaces,
       pagination: {
         totalItems,
-        itemCount: users.length,
         itemsPerPage,
-        totalPages: totalItems > 0 ? Math.ceil(totalItems / itemsPerPage) : 0,
         currentPage,
       },
     };
   }
 
   private toOutput(user: User): ListUsersOutputDto {
-    return {
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      birthday: user.birthday,
-      status: user.status,
-      productRole: user.productRole,
-      adminRole: user.adminRole,
-      permissions: user.permissions,
-      isInternal: user.isInternal,
-      candidateProfile: user.candidateProfile,
-      recruiterProfile: user.recruiterProfile,
-      emailVerifiedAt: user.emailVerifiedAt,
-      createdBy: user.createdBy,
-      lastLoginAt: user.lastLoginAt,
-      suspendedAt: user.suspendedAt,
-      suspendedReason: user.suspendedReason,
-      deactivatedAt: user.deactivatedAt,
-      deactivatedReason: user.deactivatedReason,
-      bannedAt: user.bannedAt,
-      bannedReason: user.bannedReason,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    };
+    return userToInterface(user);
   }
 }

@@ -37,7 +37,7 @@ export class LogoutController {
     description: 'Authorization token is invalid or missing.',
   })
   @Post('logout')
-  async logout(
+  async handle(
     @Headers('authorization') authorization?: string,
   ): Promise<LogoutResponse> {
     return this.logoutUseCase.execute({ authorization });

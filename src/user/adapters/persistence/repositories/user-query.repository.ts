@@ -1,10 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import {
-  buildLegacyListQuery,
-  buildLegacyListSort,
-  toLegacyUserRecord,
-} from '@src/user/adapters/persistence/repositories/user-persistence.helpers';
+
 import {
   type UserPersistenceDocument,
   UserPersistenceModel,
@@ -42,27 +38,14 @@ export class UserQueryRepositoryAdapter
     const limit = Number(filters.limit ?? 10);
     const skip = (page - 1) * limit;
     const query = this.buildQuery(filters);
-    const sort =
-      'route' in filters
-        ? buildLegacyListSort(filters)
-        : {
-            [filters.sortBy ?? 'createdAt']:
-              filters.sortOrder === 'asc' ? 1 : -1,
-          };
+    const sort: Record<string, 1 | -1> = {
+      [filters.sortBy ?? 'createdAt']: filters.sortOrder === 'asc' ? 1 : -1,
+    };
 
     const [users, totalItems] = await Promise.all([
       this.userModel.find(query).sort(sort).skip(skip).limit(limit).exec(),
       this.userModel.countDocuments(query).exec(),
     ]);
-
-    if ('route' in filters) {
-      return {
-        data: users.map((user) => toLegacyUserRecord(user)),
-        totalItems,
-        currentPage: page,
-        itemsPerPage: limit,
-      };
-    }
 
     return {
       data: users.map((user) => toDomainUser(user)),
@@ -79,7 +62,7 @@ export class UserQueryRepositoryAdapter
     | null
   > {
     const user = await this.userModel.findById(id).exec();
-    return user ? toLegacyUserRecord(user) : null;
+    return user ? toDomainUser(user) : null;
   }
 
   async findByEmail(email: string) {
@@ -90,14 +73,6 @@ export class UserQueryRepositoryAdapter
   private buildQuery(
     filters: ListUserQueryInterface | UserQueryFilters,
   ): Record<string, unknown> {
-    if ('route' in filters) {
-      if (filters.id !== undefined && !isValidObjectId(filters.id)) {
-        return { _id: null };
-      }
-
-      return buildLegacyListQuery(filters);
-    }
-
     const query: Record<string, unknown> = {};
 
     if (filters.id !== undefined) {

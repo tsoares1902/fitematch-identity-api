@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import {
@@ -6,7 +6,7 @@ import {
   type AuthenticationSessionRepository,
 } from '@src/auth/domains/repositories/authentication-session.repository';
 import type { AuthenticatedUser } from '@src/auth/adapters/security/authenticated-user.interface';
-import { Inject } from '@nestjs/common';
+
 import { UserStatusEnum } from '@src/user/domains/entities/user.entity';
 import type { AccessTokenType } from '@src/auth/domains/services/access-token-issuer';
 
@@ -53,9 +53,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     return {
       id: identity.user.id,
-      email: identity.user.email,
       firstName: identity.user.firstName,
       lastName: identity.user.lastName,
+      email: identity.user.email,
       status: identity.user.status,
       productRole: identity.user.productRole,
       adminRole: identity.user.adminRole,

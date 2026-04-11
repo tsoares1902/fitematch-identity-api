@@ -55,7 +55,7 @@ export class DeleteUserController {
   })
   @Delete(':id')
   @HttpCode(200)
-  async remove(@Param('id') id: string): Promise<DeleteUserResponseDto> {
+  async handle(@Param('id') id: string): Promise<DeleteUserResponseDto> {
     return this.deleteUserUseCase.execute(id);
   }
 }
