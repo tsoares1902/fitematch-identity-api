@@ -280,6 +280,9 @@ export interface SocialEntity {
   instagram?: string;
   x?: string;
   linkedin?: string;
+  youtube?: string;
+  tiktok?: string;
+  website?: string;
 }
 
 export interface EthnicityEntity {

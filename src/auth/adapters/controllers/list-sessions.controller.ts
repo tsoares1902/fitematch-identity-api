@@ -19,7 +19,7 @@ import { ProductPermissionsGuard } from '@src/auth/adapters/guards/product-permi
 import type { AuthenticatedUser } from '@src/auth/adapters/security/authenticated-user.interface';
 import { SessionResponseDto } from '@src/auth/adapters/dto/responses/session-response.dto';
 import {
-  LIST_SESSIONS_USE_CASE,
+  LIST_SESSIONS_USE_CASE_INTERFACE,
   type ListSessionsUseCaseInterface,
 } from '@src/auth/applications/contracts/list-sessions.use-case-interface';
 import type { SessionRecordResponse } from '@src/auth/applications/contracts/session-record.interface';
@@ -30,7 +30,7 @@ import { ProductPermissionEnum } from '@src/user/domains/entities/user.entity';
 @UseGuards(JwtAuthGuard, ProductPermissionsGuard)
 export class ListSessionsController {
   constructor(
-    @Inject(LIST_SESSIONS_USE_CASE)
+    @Inject(LIST_SESSIONS_USE_CASE_INTERFACE)
     private readonly listSessionsUseCase: ListSessionsUseCaseInterface,
   ) {}
 

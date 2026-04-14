@@ -1,4 +1,5 @@
-export const FORGOT_PASSWORD_USE_CASE = 'FORGOT_PASSWORD_USE_CASE';
+export const FORGOT_PASSWORD_USE_CASE_INTERFACE =
+  'FORGOT_PASSWORD_USE_CASE_INTERFACE';
 
 export interface ForgotPasswordRequest {
   email: string;

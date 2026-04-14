@@ -1,4 +1,4 @@
-export const LOGOUT_USE_CASE = 'LOGOUT_USE_CASE';
+export const LOGOUT_USE_CASE_INTERFACE = 'LOGOUT_USE_CASE_INTERFACE';
 
 export interface LogoutRequest {
   authorization?: string;

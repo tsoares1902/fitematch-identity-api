@@ -11,7 +11,7 @@ import {
 import { LoginDto } from '@src/auth/adapters/dto/login.dto';
 import {
   type LoginResponse,
-  LOGIN_USE_CASE,
+  LOGIN_USE_CASE_INTERFACE,
   type LoginUseCaseInterface,
 } from '@src/auth/applications/contracts/login.use-case-interface';
 import { LoginResponseDto } from '@src/auth/adapters/dto/login-response.dto';
@@ -20,7 +20,7 @@ import { LoginResponseDto } from '@src/auth/adapters/dto/login-response.dto';
 @Controller('auth')
 export class LoginController {
   constructor(
-    @Inject(LOGIN_USE_CASE)
+    @Inject(LOGIN_USE_CASE_INTERFACE)
     private readonly loginUseCase: LoginUseCaseInterface,
   ) {}
 

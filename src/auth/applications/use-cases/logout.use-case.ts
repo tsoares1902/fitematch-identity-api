@@ -43,6 +43,10 @@ export class LogoutUseCase implements LogoutUseCaseInterface {
       throw new InvalidTokenError();
     }
 
+    if (!identity.user.id) {
+      throw new InvalidTokenError();
+    }
+
     const sessionWasClosed =
       await this.authenticationSessionRepository.deactivateSession(
         identity.user.id,

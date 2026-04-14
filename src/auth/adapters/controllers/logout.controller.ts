@@ -9,7 +9,7 @@ import {
 import { JwtAuthGuard } from '@src/auth/adapters/guards/jwt-auth.guard';
 import { LogoutResponseDto } from '@src/auth/adapters/dto/logout-response.dto';
 import {
-  LOGOUT_USE_CASE,
+  LOGOUT_USE_CASE_INTERFACE,
   type LogoutResponse,
   type LogoutUseCaseInterface,
 } from '@src/auth/applications/contracts/logout.use-case-interface';
@@ -19,7 +19,7 @@ import {
 @UseGuards(JwtAuthGuard)
 export class LogoutController {
   constructor(
-    @Inject(LOGOUT_USE_CASE)
+    @Inject(LOGOUT_USE_CASE_INTERFACE)
     private readonly logoutUseCase: LogoutUseCaseInterface,
   ) {}
 

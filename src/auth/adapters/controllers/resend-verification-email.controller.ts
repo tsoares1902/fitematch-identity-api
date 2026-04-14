@@ -9,7 +9,7 @@ import {
 import { LogoutResponseDto } from '@src/auth/adapters/dto/logout-response.dto';
 import { ResendVerificationEmailDto } from '@src/auth/adapters/dto/resend-verification-email.dto';
 import {
-  RESEND_VERIFICATION_EMAIL_USE_CASE,
+  RESEND_VERIFICATION_EMAIL_USE_CASE_INTERFACE,
   type ResendVerificationEmailUseCaseInterface,
 } from '@src/auth/applications/contracts/resend-verification-email.use-case-interface';
 
@@ -17,7 +17,7 @@ import {
 @Controller('auth')
 export class ResendVerificationEmailController {
   constructor(
-    @Inject(RESEND_VERIFICATION_EMAIL_USE_CASE)
+    @Inject(RESEND_VERIFICATION_EMAIL_USE_CASE_INTERFACE)
     private readonly resendVerificationEmailUseCase: ResendVerificationEmailUseCaseInterface,
   ) {}
 

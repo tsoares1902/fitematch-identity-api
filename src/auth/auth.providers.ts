@@ -1,9 +1,9 @@
 import EncryptUtils from '@src/shared/applications/utils/encrypt.utils';
 import { AuthRepository } from '@src/auth/adapters/repositories/auth.repository';
-import { LIST_SESSIONS_REPOSITORY } from '@src/auth/applications/contracts/list-sessions.repository-interface';
-import { LIST_SESSIONS_USE_CASE } from '@src/auth/applications/contracts/list-sessions.use-case-interface';
-import { LOGIN_REPOSITORY } from '@src/auth/applications/contracts/login.repository-interface';
-import { LOGIN_USE_CASE } from '@src/auth/applications/contracts/login.use-case-interface';
+import { LIST_SESSIONS_REPOSITORY_INTERFACE } from '@src/auth/applications/contracts/list-sessions.repository-interface';
+import { LIST_SESSIONS_USE_CASE_INTERFACE } from '@src/auth/applications/contracts/list-sessions.use-case-interface';
+import { LOGIN_REPOSITORY_INTERFACE } from '@src/auth/applications/contracts/login.repository-interface';
+import { LOGIN_USE_CASE_INTERFACE } from '@src/auth/applications/contracts/login.use-case-interface';
 import { AUTHENTICATION_REPOSITORY } from '@src/auth/domains/repositories/authentication.repository';
 import { AUTHENTICATION_SESSION_REPOSITORY } from '@src/auth/domains/repositories/authentication-session.repository';
 import { ACCOUNT_RECOVERY_REPOSITORY } from '@src/auth/domains/repositories/account-recovery.repository';
@@ -27,13 +27,13 @@ import { ForgotPasswordUseCase } from '@src/auth/applications/use-cases/forgot-p
 import { LoginUseCase } from '@src/auth/applications/use-cases/login.use-case';
 import { ListSessionsUseCase } from '@src/auth/applications/use-cases/list-sessions.use-case';
 import { UpdateMeUseCase } from '@src/auth/applications/use-cases/update-me.use-case';
-import { LOGOUT_USE_CASE } from '@src/auth/applications/contracts/logout.use-case-interface';
+import { LOGOUT_USE_CASE_INTERFACE } from '@src/auth/applications/contracts/logout.use-case-interface';
 import { LogoutUseCase } from '@src/auth/applications/use-cases/logout.use-case';
-import { FORGOT_PASSWORD_USE_CASE } from '@src/auth/applications/contracts/forgot-password.use-case-interface';
-import { RESET_PASSWORD_USE_CASE } from '@src/auth/applications/contracts/reset-password.use-case-interface';
-import { VERIFY_EMAIL_USE_CASE } from '@src/auth/applications/contracts/verify-email.use-case-interface';
-import { RESEND_VERIFICATION_EMAIL_USE_CASE } from '@src/auth/applications/contracts/resend-verification-email.use-case-interface';
-import { UPDATE_ME_USE_CASE } from '@src/auth/applications/contracts/update-me.use-case-interface';
+import { FORGOT_PASSWORD_USE_CASE_INTERFACE } from '@src/auth/applications/contracts/forgot-password.use-case-interface';
+import { RESET_PASSWORD_USE_CASE_INTERFACE } from '@src/auth/applications/contracts/reset-password.use-case-interface';
+import { VERIFY_EMAIL_USE_CASE_INTERFACE } from '@src/auth/applications/contracts/verify-email.use-case-interface';
+import { RESEND_VERIFICATION_EMAIL_USE_CASE_INTERFACE } from '@src/auth/applications/contracts/resend-verification-email.use-case-interface';
+import { UPDATE_ME_USE_CASE_INTERFACE } from '@src/auth/applications/contracts/update-me.use-case-interface';
 import { ResetPasswordUseCase } from '@src/auth/applications/use-cases/reset-password.use-case';
 import { VerifyEmailUseCase } from '@src/auth/applications/use-cases/verify-email.use-case';
 import { ResendVerificationEmailUseCase } from '@src/auth/applications/use-cases/resend-verification-email.use-case';
@@ -52,7 +52,7 @@ export const authProviders = [
   ProductPermissionsGuard,
   BcryptPasswordVerifier,
   {
-    provide: LIST_SESSIONS_REPOSITORY,
+    provide: LIST_SESSIONS_REPOSITORY_INTERFACE,
     useExisting: AuthRepository,
   },
   {
@@ -60,7 +60,7 @@ export const authProviders = [
     useExisting: AuthRepository,
   },
   {
-    provide: LOGIN_REPOSITORY,
+    provide: LOGIN_REPOSITORY_INTERFACE,
     useExisting: AuthRepository,
   },
   {
@@ -96,35 +96,35 @@ export const authProviders = [
     useExisting: BcryptPasswordVerifier,
   },
   {
-    provide: LIST_SESSIONS_USE_CASE,
+    provide: LIST_SESSIONS_USE_CASE_INTERFACE,
     useClass: ListSessionsUseCase,
   },
   {
-    provide: LOGIN_USE_CASE,
+    provide: LOGIN_USE_CASE_INTERFACE,
     useClass: LoginUseCase,
   },
   {
-    provide: UPDATE_ME_USE_CASE,
+    provide: UPDATE_ME_USE_CASE_INTERFACE,
     useClass: UpdateMeUseCase,
   },
   {
-    provide: FORGOT_PASSWORD_USE_CASE,
+    provide: FORGOT_PASSWORD_USE_CASE_INTERFACE,
     useClass: ForgotPasswordUseCase,
   },
   {
-    provide: RESET_PASSWORD_USE_CASE,
+    provide: RESET_PASSWORD_USE_CASE_INTERFACE,
     useClass: ResetPasswordUseCase,
   },
   {
-    provide: VERIFY_EMAIL_USE_CASE,
+    provide: VERIFY_EMAIL_USE_CASE_INTERFACE,
     useClass: VerifyEmailUseCase,
   },
   {
-    provide: RESEND_VERIFICATION_EMAIL_USE_CASE,
+    provide: RESEND_VERIFICATION_EMAIL_USE_CASE_INTERFACE,
     useClass: ResendVerificationEmailUseCase,
   },
   {
-    provide: LOGOUT_USE_CASE,
+    provide: LOGOUT_USE_CASE_INTERFACE,
     useClass: LogoutUseCase,
   },
 ];

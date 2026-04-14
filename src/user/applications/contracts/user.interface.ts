@@ -53,10 +53,10 @@ export interface AddressInterface {
 export interface SocialInterface {
   facebook?: string;
   instagram?: string;
-  x: string;
-  tiktok: string;
+  x?: string;
   linkedin?: string;
   youtube?: string;
+  tiktok?: string;
   website?: string;
 }
 

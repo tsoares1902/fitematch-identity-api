@@ -9,7 +9,7 @@ import {
 import { LogoutResponseDto } from '@src/auth/adapters/dto/logout-response.dto';
 import { VerifyEmailDto } from '@src/auth/adapters/dto/verify-email.dto';
 import {
-  VERIFY_EMAIL_USE_CASE,
+  VERIFY_EMAIL_USE_CASE_INTERFACE,
   type VerifyEmailUseCaseInterface,
 } from '@src/auth/applications/contracts/verify-email.use-case-interface';
 
@@ -17,7 +17,7 @@ import {
 @Controller('auth')
 export class VerifyEmailController {
   constructor(
-    @Inject(VERIFY_EMAIL_USE_CASE)
+    @Inject(VERIFY_EMAIL_USE_CASE_INTERFACE)
     private readonly verifyEmailUseCase: VerifyEmailUseCaseInterface,
   ) {}
 

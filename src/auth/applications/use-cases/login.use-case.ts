@@ -19,7 +19,13 @@ import {
 } from '@src/auth/domains/services/password-verifier';
 import { InvalidCredentialsError } from '@src/auth/applications/errors/invalid-credentials.error';
 import { AuthenticationForbiddenError } from '@src/auth/applications/errors/authentication-forbidden.error';
-import { UserStatusEnum } from '@src/user/domains/entities/user.entity';
+import {
+  AdminPermissionEnum,
+  AdminRoleEnum,
+  ProductPermissionEnum,
+  ProductRoleEnum,
+  UserStatusEnum,
+} from '@src/user/domains/entities/user.entity';
 
 @Injectable()
 export class LoginUseCase implements LoginUseCaseInterface {
@@ -50,13 +56,24 @@ export class LoginUseCase implements LoginUseCaseInterface {
       throw new InvalidCredentialsError();
     }
 
-    this.ensureUserCanAuthenticate(identity.user.status);
+    const userId = this.requireString(identity.user.id);
+    const status = this.toUserStatus(identity.user.status);
+    const productRole = this.toOptionalProductRole(identity.user.productRole);
+    const productPermissions = this.toOptionalProductPermissions(
+      identity.user.productPermissions,
+    );
+    const adminRole = this.toOptionalAdminRole(identity.user.adminRole);
+    const adminPermissions = this.toOptionalAdminPermissions(
+      identity.user.adminPermissions ?? identity.user.permissions,
+    );
+
+    this.ensureUserCanAuthenticate(status);
 
     const createdAt = new Date();
-    const sessionId = `${identity.user.id}-${Date.now()}`;
+    const sessionId = `${userId}-${Date.now()}`;
 
     await this.authenticationRepository.createSession({
-      userId: identity.user.id,
+      userId,
       sessionId,
       client: data.client,
       active: true,
@@ -65,32 +82,30 @@ export class LoginUseCase implements LoginUseCaseInterface {
     });
 
     const accessToken = await this.accessTokenIssuer.issue({
-      sub: identity.user.id,
+      sub: userId,
       sid: sessionId,
       ver: identity.tokenVersion,
       typ: this.resolveTokenType(identity.user.isInternal),
-      pr: identity.user.productRole,
-      pperm: identity.user.productPermissions,
-      ar: identity.user.adminRole,
-      aperm: identity.user.adminPermissions ?? identity.user.permissions,
-      perm: identity.user.adminPermissions ?? identity.user.permissions,
+      pr: productRole,
+      pperm: productPermissions,
+      ar: adminRole,
+      aperm: adminPermissions,
+      perm: adminPermissions,
     });
 
     return {
       accessToken,
       user: {
-        id: identity.user.id,
+        id: userId,
         firstName: identity.user.firstName,
         lastName: identity.user.lastName,
         email: identity.user.email,
-        status: identity.user.status,
-        productRole: identity.user.productRole,
-        productPermissions: identity.user.productPermissions,
-        adminRole: identity.user.adminRole,
-        adminPermissions:
-          identity.user.adminPermissions ?? identity.user.permissions,
-        permissions:
-          identity.user.adminPermissions ?? identity.user.permissions,
+        status,
+        productRole,
+        productPermissions,
+        adminRole,
+        adminPermissions,
+        permissions: adminPermissions,
         isInternal: identity.user.isInternal,
       },
     };
@@ -117,5 +132,85 @@ export class LoginUseCase implements LoginUseCaseInterface {
 
   private resolveTokenType(isInternal?: boolean): AccessTokenType {
     return isInternal ? 'internal' : 'product';
+  }
+
+  private requireString(value?: string): string {
+    if (!value) {
+      throw new InvalidCredentialsError();
+    }
+
+    return value;
+  }
+
+  private toUserStatus(status: string): UserStatusEnum {
+    if (Object.values(UserStatusEnum).includes(status as UserStatusEnum)) {
+      return status as UserStatusEnum;
+    }
+
+    throw new AuthenticationForbiddenError();
+  }
+
+  private toOptionalProductRole(role?: string): ProductRoleEnum | undefined {
+    if (!role) {
+      return undefined;
+    }
+
+    if (Object.values(ProductRoleEnum).includes(role as ProductRoleEnum)) {
+      return role as ProductRoleEnum;
+    }
+
+    throw new AuthenticationForbiddenError();
+  }
+
+  private toOptionalProductPermissions(
+    permissions?: string[],
+  ): ProductPermissionEnum[] | undefined {
+    if (!permissions) {
+      return undefined;
+    }
+
+    if (
+      permissions.every((permission) =>
+        Object.values(ProductPermissionEnum).includes(
+          permission as ProductPermissionEnum,
+        ),
+      )
+    ) {
+      return permissions as ProductPermissionEnum[];
+    }
+
+    throw new AuthenticationForbiddenError();
+  }
+
+  private toOptionalAdminRole(role?: string): AdminRoleEnum | undefined {
+    if (!role) {
+      return undefined;
+    }
+
+    if (Object.values(AdminRoleEnum).includes(role as AdminRoleEnum)) {
+      return role as AdminRoleEnum;
+    }
+
+    throw new AuthenticationForbiddenError();
+  }
+
+  private toOptionalAdminPermissions(
+    permissions?: string[],
+  ): AdminPermissionEnum[] | undefined {
+    if (!permissions) {
+      return undefined;
+    }
+
+    if (
+      permissions.every((permission) =>
+        Object.values(AdminPermissionEnum).includes(
+          permission as AdminPermissionEnum,
+        ),
+      )
+    ) {
+      return permissions as AdminPermissionEnum[];
+    }
+
+    throw new AuthenticationForbiddenError();
   }
 }

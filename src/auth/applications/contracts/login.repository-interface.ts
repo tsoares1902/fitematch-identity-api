@@ -1,7 +1,7 @@
 import type { CreateSessionDto } from '@src/auth/adapters/dto/create-session.dto';
 import type { UserInterface } from '@src/user/applications/contracts/user.interface';
 
-export const LOGIN_REPOSITORY = 'LOGIN_REPOSITORY';
+export const LOGIN_REPOSITORY_INTERFACE = 'LOGIN_REPOSITORY_INTERFACE';
 
 export interface LoginUserRecord extends UserInterface {
   id: string;

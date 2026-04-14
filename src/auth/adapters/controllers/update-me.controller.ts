@@ -23,7 +23,7 @@ import { ProductPermissionsGuard } from '@src/auth/adapters/guards/product-permi
 import type { AuthenticatedUser } from '@src/auth/adapters/security/authenticated-user.interface';
 import { UpdateMeDto } from '@src/auth/adapters/dto/update-me.dto';
 import {
-  UPDATE_ME_USE_CASE,
+  UPDATE_ME_USE_CASE_INTERFACE,
   type UpdateMeUseCaseInterface,
 } from '@src/auth/applications/contracts/update-me.use-case-interface';
 import { ProductPermissionEnum } from '@src/user/domains/entities/user.entity';
@@ -36,7 +36,7 @@ import { userInterfaceToPublicDto } from '@src/user/adapters/mappers/user-public
 @UseGuards(JwtAuthGuard, ProductPermissionsGuard)
 export class UpdateMeController {
   constructor(
-    @Inject(UPDATE_ME_USE_CASE)
+    @Inject(UPDATE_ME_USE_CASE_INTERFACE)
     private readonly updateMeUseCase: UpdateMeUseCaseInterface,
   ) {}
 

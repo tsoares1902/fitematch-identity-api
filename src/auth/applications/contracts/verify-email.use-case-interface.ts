@@ -1,4 +1,5 @@
-export const VERIFY_EMAIL_USE_CASE = 'VERIFY_EMAIL_USE_CASE';
+export const VERIFY_EMAIL_USE_CASE_INTERFACE =
+  'VERIFY_EMAIL_USE_CASE_INTERFACE';
 
 export interface VerifyEmailRequest {
   token: string;

@@ -9,7 +9,7 @@ import {
 import { ForgotPasswordDto } from '@src/auth/adapters/dto/forgot-password.dto';
 import { LogoutResponseDto } from '@src/auth/adapters/dto/logout-response.dto';
 import {
-  FORGOT_PASSWORD_USE_CASE,
+  FORGOT_PASSWORD_USE_CASE_INTERFACE,
   type ForgotPasswordUseCaseInterface,
 } from '@src/auth/applications/contracts/forgot-password.use-case-interface';
 
@@ -17,7 +17,7 @@ import {
 @Controller('auth')
 export class ForgotPasswordController {
   constructor(
-    @Inject(FORGOT_PASSWORD_USE_CASE)
+    @Inject(FORGOT_PASSWORD_USE_CASE_INTERFACE)
     private readonly forgotPasswordUseCase: ForgotPasswordUseCaseInterface,
   ) {}
 

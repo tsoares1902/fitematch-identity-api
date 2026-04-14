@@ -7,7 +7,7 @@ import type {
   UserStatusEnum,
 } from '@src/user/domains/entities/user.entity';
 
-export const LOGIN_USE_CASE = 'LOGIN_USE_CASE';
+export const LOGIN_USE_CASE_INTERFACE = 'LOGIN_USE_CASE_INTERFACE';
 
 export interface LoginRequest {
   email: string;

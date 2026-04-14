@@ -1,4 +1,5 @@
-export const RESET_PASSWORD_USE_CASE = 'RESET_PASSWORD_USE_CASE';
+export const RESET_PASSWORD_USE_CASE_INTERFACE =
+  'RESET_PASSWORD_USE_CASE_INTERFACE';
 
 export interface ResetPasswordRequest {
   token: string;
