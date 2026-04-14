@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  AdminPermissionEnum,
   AvailabilityDayEnum,
   ClothingSizeEnum,
   CourseTypeEnum,
@@ -8,7 +9,7 @@ import {
   EmploymentTypeEnum,
   EthnicityEnum,
   GenderIdentityEnum,
-  PermissionEnum,
+  ProductPermissionEnum,
   ProductRoleEnum,
   SexualOrientationEnum,
   UserStatusEnum,
@@ -300,10 +301,16 @@ export class UserPublicDto {
   @ApiPropertyOptional({ enum: ProductRoleEnum })
   productRole?: string;
 
+  @ApiPropertyOptional({ type: [String], enum: ProductPermissionEnum })
+  productPermissions?: string[];
+
   @ApiPropertyOptional({ enum: ['staff', 'admin', 'super_admin'] })
   adminRole?: string;
 
-  @ApiPropertyOptional({ type: [String], enum: PermissionEnum })
+  @ApiPropertyOptional({ type: [String], enum: AdminPermissionEnum })
+  adminPermissions?: string[];
+
+  @ApiPropertyOptional({ type: [String], enum: AdminPermissionEnum })
   permissions?: string[];
 
   @ApiPropertyOptional()

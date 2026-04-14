@@ -29,13 +29,25 @@ describe('MasksUtils', () => {
     });
 
     it('should format a company social document', () => {
-      expect(masksUtils.brazilCompanySocialDocumentMask('12345678000199')).toBe(
-        '12.345.678/0001-99',
+      expect(masksUtils.brazilCompanySocialDocumentMask('12345678000195')).toBe(
+        '12.345.678/0001-95',
+      );
+    });
+
+    it('should format a valid alphanumeric company social document', () => {
+      expect(masksUtils.brazilCompanySocialDocumentMask('AB12CD34000184')).toBe(
+        'AB.12C.D34/0001-84',
       );
     });
 
     it('should return the original company social document when invalid', () => {
       expect(masksUtils.brazilCompanySocialDocumentMask('123')).toBe('123');
+    });
+
+    it('should return the original alphanumeric company social document when check digits are invalid', () => {
+      expect(masksUtils.brazilCompanySocialDocumentMask('AB12CD34000100')).toBe(
+        'AB12CD34000100',
+      );
     });
   });
 

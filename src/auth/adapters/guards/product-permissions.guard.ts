@@ -5,21 +5,21 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { PERMISSIONS_KEY } from '@src/auth/adapters/decorators/permissions.decorator';
+import { PRODUCT_PERMISSIONS_KEY } from '@src/auth/adapters/decorators/product-permissions.decorator';
 import type { AuthenticatedUser } from '@src/auth/adapters/security/authenticated-user.interface';
 import {
-  AdminPermissionEnum,
-  AdminRoleEnum,
+  PRODUCT_ROLE_PERMISSIONS,
+  type ProductPermissionEnum,
 } from '@src/user/domains/entities/user.entity';
 
 @Injectable()
-export class PermissionsGuard implements CanActivate {
+export class ProductPermissionsGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
     const requiredPermissions = this.reflector.getAllAndOverride<
-      AdminPermissionEnum[]
-    >(PERMISSIONS_KEY, [context.getHandler(), context.getClass()]);
+      ProductPermissionEnum[]
+    >(PRODUCT_PERMISSIONS_KEY, [context.getHandler(), context.getClass()]);
 
     if (!requiredPermissions || requiredPermissions.length === 0) {
       return true;
@@ -34,21 +34,21 @@ export class PermissionsGuard implements CanActivate {
       return false;
     }
 
-    if (!user.isInternal) {
-      throw new ForbiddenException('internal dashboard access required');
-    }
+    const rolePermissions = user.productRole
+      ? (PRODUCT_ROLE_PERMISSIONS[user.productRole] ?? [])
+      : [];
+    const explicitPermissions = user.productPermissions ?? [];
+    const grantedPermissions = new Set<ProductPermissionEnum>([
+      ...rolePermissions,
+      ...explicitPermissions,
+    ]);
 
-    if (user.adminRole === AdminRoleEnum.SUPER_ADMIN) {
-      return true;
-    }
-
-    const userPermissions = user.permissions ?? [];
     const hasAllPermissions = requiredPermissions.every((permission) =>
-      userPermissions.includes(permission),
+      grantedPermissions.has(permission),
     );
 
     if (!hasAllPermissions) {
-      throw new ForbiddenException('insufficient permissions');
+      throw new ForbiddenException('insufficient product permissions');
     }
 
     return true;

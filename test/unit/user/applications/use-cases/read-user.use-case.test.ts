@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UserNotFoundError } from '@src/user/applications/errors/user-not-found.error';
 import { ReadUserUseCase } from '@src/user/applications/use-cases/read-user.use-case';
 import {
+  ProductPermissionEnum,
   ProductRoleEnum,
   UserStatusEnum,
   type User,
@@ -46,6 +47,7 @@ describe('ReadUserUseCase', () => {
       birthday: '1990-01-01',
       status: UserStatusEnum.ACTIVE,
       productRole: ProductRoleEnum.CANDIDATE,
+      productPermissions: [ProductPermissionEnum.VIEW_OWN_USER],
       isInternal: false,
       candidateProfile: {},
       recruiterProfile: undefined,
@@ -69,15 +71,7 @@ describe('ReadUserUseCase', () => {
         isInternal: false,
         candidateProfile: {},
         recruiterProfile: undefined,
-        emailVerifiedAt: undefined,
-        createdBy: undefined,
-        lastLoginAt: undefined,
-        suspendedAt: undefined,
-        suspendedReason: undefined,
-        deactivatedAt: undefined,
-        deactivatedReason: undefined,
-        bannedAt: undefined,
-        bannedReason: undefined,
+        accountVerifiedAt: undefined,
         createdAt,
         updatedAt,
       },

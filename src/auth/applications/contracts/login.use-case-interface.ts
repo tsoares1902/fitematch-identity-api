@@ -1,7 +1,8 @@
 import type { SessionClient } from '@src/auth/domains/repositories/authentication.repository';
 import type {
+  AdminPermissionEnum,
   AdminRoleEnum,
-  PermissionEnum,
+  ProductPermissionEnum,
   ProductRoleEnum,
   UserStatusEnum,
 } from '@src/user/domains/entities/user.entity';
@@ -23,8 +24,10 @@ export interface LoginResponse {
     email: string;
     status: UserStatusEnum;
     productRole?: ProductRoleEnum;
+    productPermissions?: ProductPermissionEnum[];
     adminRole?: AdminRoleEnum;
-    permissions?: PermissionEnum[];
+    adminPermissions?: AdminPermissionEnum[];
+    permissions?: AdminPermissionEnum[];
     isInternal?: boolean;
   };
 }

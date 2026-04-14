@@ -45,7 +45,17 @@ export class JwtAccessTokenVerifier implements AccessTokenVerifier {
         candidate.typ === 'internal' ||
         candidate.typ === 'product') &&
       (candidate.pr === undefined || typeof candidate.pr === 'string') &&
+      (candidate.pperm === undefined ||
+        (Array.isArray(candidate.pperm) &&
+          candidate.pperm.every(
+            (permission) => typeof permission === 'string',
+          ))) &&
       (candidate.ar === undefined || typeof candidate.ar === 'string') &&
+      (candidate.aperm === undefined ||
+        (Array.isArray(candidate.aperm) &&
+          candidate.aperm.every(
+            (permission) => typeof permission === 'string',
+          ))) &&
       (candidate.perm === undefined ||
         (Array.isArray(candidate.perm) &&
           candidate.perm.every((permission) => typeof permission === 'string')))

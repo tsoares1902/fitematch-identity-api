@@ -11,10 +11,12 @@ export interface CreateUserDataUseCaseInterface {
   lastName: string;
   email: string;
   password: string;
-  birthday?: string;
+  birthday: string;
   status?: string;
   productRole?: string;
+  productPermissions?: string[];
   adminRole?: string;
+  adminPermissions?: string[];
   permissions?: string[];
   isInternal?: boolean;
   candidateProfile?: CandidateProfileInterface;

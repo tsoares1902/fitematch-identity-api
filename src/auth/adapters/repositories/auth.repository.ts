@@ -33,10 +33,9 @@ import {
   UserPersistenceModel,
 } from '@src/user/adapters/persistence/mongoose/user.persistence';
 import { toDomainUser } from '@src/user/adapters/persistence/mappers/user-persistence.mapper';
-import { UserStatusEnum } from '@src/user/applications/contracts/user-status.enum';
 import {
-  // ProductRoleEnum removido
   UserStatusEnum as DomainUserStatusEnum,
+  UserStatusEnum,
 } from '@src/user/domains/entities/user.entity';
 import { Model } from 'mongoose';
 
@@ -301,14 +300,14 @@ export class AuthRepository
   }
 
   private toLegacyStatus(status?: DomainUserStatusEnum): UserStatusEnum {
-    if (status === DomainUserStatusEnum.PENDING_EMAIL_VERIFICATION) {
-      return UserStatusEnum.PENDING;
+    if ((status as string | undefined) === 'pending_account_confirmation') {
+      return 'pending' as UserStatusEnum;
     }
 
-    if (status === DomainUserStatusEnum.ACTIVE) {
-      return UserStatusEnum.ENABLED;
+    if ((status as string | undefined) === 'active') {
+      return 'enabled' as UserStatusEnum;
     }
 
-    return UserStatusEnum.DISABLED;
+    return 'disabled' as UserStatusEnum;
   }
 }

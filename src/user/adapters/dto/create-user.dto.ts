@@ -17,6 +17,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import {
+  AdminPermissionEnum,
   AdminRoleEnum,
   AvailabilityDayEnum,
   ClothingSizeEnum,
@@ -26,7 +27,7 @@ import {
   EmploymentTypeEnum,
   EthnicityEnum,
   GenderIdentityEnum,
-  PermissionEnum,
+  ProductPermissionEnum,
   ProductRoleEnum,
   SexualOrientationEnum,
   UserStatusEnum,
@@ -81,7 +82,14 @@ class DocumentsInputDto {
   crefState?: string;
 }
 
-class ContactsInputDto {
+class CompanyDocumentsInputDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  socialDocumentNumber?: string;
+}
+
+class PhoneInputDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -96,7 +104,9 @@ class ContactsInputDto {
   @IsOptional()
   @IsBoolean()
   isTelegram?: boolean;
+}
 
+class AddressInputDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -152,20 +162,17 @@ class SocialInputDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  youtube?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
   website?: string;
 }
 
-class DemographicsInputDto {
+class EthnicityInputDto {
   @ApiPropertyOptional({ enum: EthnicityEnum })
   @IsOptional()
   @IsEnum(EthnicityEnum)
   ethnicity?: EthnicityEnum;
+}
 
+class DiversityInputDto {
   @ApiPropertyOptional({ enum: SexualOrientationEnum })
   @IsOptional()
   @IsEnum(SexualOrientationEnum)
@@ -296,26 +303,36 @@ class EducationInputDto {
   isCurrentlyStudying?: boolean;
 }
 
-class CertificationInputDto {
-  @ApiProperty()
+class ExperienceInputDto {
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  name!: string;
+  companyName?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  issuer?: string;
+  position?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  issueDate?: string;
+  startDate?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  expirationDate?: string;
+  endDate?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  isCurrent?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  description?: string;
 }
 
 class AvailabilityInputDto {
@@ -365,11 +382,6 @@ class ProfessionalMediaInputDto {
   @IsOptional()
   @IsString()
   resumeUrl?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  videoUrl?: string;
 }
 
 class CandidateProfileInputDto {
@@ -380,12 +392,19 @@ class CandidateProfileInputDto {
   @Type(() => DocumentsInputDto)
   documents?: DocumentsInputDto;
 
-  @ApiPropertyOptional({ type: ContactsInputDto })
+  @ApiPropertyOptional({ type: PhoneInputDto })
   @IsOptional()
   @IsObject()
   @ValidateNested()
-  @Type(() => ContactsInputDto)
-  contacts?: ContactsInputDto;
+  @Type(() => PhoneInputDto)
+  phone?: PhoneInputDto;
+
+  @ApiPropertyOptional({ type: AddressInputDto })
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => AddressInputDto)
+  address?: AddressInputDto;
 
   @ApiPropertyOptional({ type: SocialInputDto })
   @IsOptional()
@@ -394,12 +413,19 @@ class CandidateProfileInputDto {
   @Type(() => SocialInputDto)
   social?: SocialInputDto;
 
-  @ApiPropertyOptional({ type: DemographicsInputDto })
+  @ApiPropertyOptional({ type: EthnicityInputDto })
   @IsOptional()
   @IsObject()
   @ValidateNested()
-  @Type(() => DemographicsInputDto)
-  demographics?: DemographicsInputDto;
+  @Type(() => EthnicityInputDto)
+  ethnicity?: EthnicityInputDto;
+
+  @ApiPropertyOptional({ type: DiversityInputDto })
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => DiversityInputDto)
+  diversity?: DiversityInputDto;
 
   @ApiPropertyOptional({ type: PhysicalProfileInputDto })
   @IsOptional()
@@ -429,12 +455,12 @@ class CandidateProfileInputDto {
   @Type(() => EducationInputDto)
   educations?: EducationInputDto[];
 
-  @ApiPropertyOptional({ type: [CertificationInputDto] })
+  @ApiPropertyOptional({ type: [ExperienceInputDto] })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => CertificationInputDto)
-  certifications?: CertificationInputDto[];
+  @Type(() => ExperienceInputDto)
+  experiences?: ExperienceInputDto[];
 
   @ApiPropertyOptional({ type: AvailabilityInputDto })
   @IsOptional()
@@ -462,27 +488,28 @@ class RecruiterProfileInputDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  companyName?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  companyDocument?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
   position?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ type: CompanyDocumentsInputDto })
   @IsOptional()
-  @IsString()
-  phone?: string;
+  @IsObject()
+  @ValidateNested()
+  @Type(() => CompanyDocumentsInputDto)
+  documents?: CompanyDocumentsInputDto;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ type: PhoneInputDto })
   @IsOptional()
-  @IsString()
-  website?: string;
+  @IsObject()
+  @ValidateNested()
+  @Type(() => PhoneInputDto)
+  phone?: PhoneInputDto;
+
+  @ApiPropertyOptional({ type: AddressInputDto })
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => AddressInputDto)
+  address?: AddressInputDto;
 }
 
 export class CreateUserDto {
@@ -513,13 +540,15 @@ export class CreateUserDto {
   @MaxLength(128)
   password!: string;
 
-  // Optional fields from UserInterface
-  @ApiPropertyOptional({ example: '1994-01-01' })
-  @IsOptional()
+  @ApiProperty({ example: '1994-01-01' })
   @IsDateString()
-  birthday?: string;
+  @IsNotEmpty()
+  birthday!: string;
 
-  @ApiPropertyOptional({ enum: UserStatusEnum })
+  @ApiPropertyOptional({
+    enum: UserStatusEnum,
+    default: UserStatusEnum.PENDING_ACCOUNT_CONFIRMATION,
+  })
   @IsOptional()
   @IsEnum(UserStatusEnum)
   status?: UserStatusEnum;
@@ -528,6 +557,12 @@ export class CreateUserDto {
   @IsOptional()
   @IsEnum(ProductRoleEnum)
   productRole?: ProductRoleEnum;
+
+  @ApiPropertyOptional({ type: [String], enum: ProductPermissionEnum })
+  @IsOptional()
+  @IsArray()
+  @IsEnum(ProductPermissionEnum, { each: true })
+  productPermissions?: ProductPermissionEnum[];
 
   @ApiPropertyOptional({ type: CandidateProfileInputDto })
   @IsOptional()
@@ -543,243 +578,10 @@ export class CreateUserDto {
   @Type(() => RecruiterProfileInputDto)
   recruiterProfile?: RecruiterProfileInputDto;
 
-  // Additional optional fields from UserInterface
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  id?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsDateString()
-  createdAt?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsDateString()
-  updatedAt?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  createdBy?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  updatedBy?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsBoolean()
-  isDeleted?: boolean;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsBoolean()
-  isActive?: boolean;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsBoolean()
-  isEmailVerified?: boolean;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  lastLoginAt?: string;
-
-  @ApiPropertyOptional({ type: [String] })
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  tags?: string[];
-
-  @ApiPropertyOptional({ type: [String] })
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  notes?: string[];
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  externalId?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  username?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  phone?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  avatarUrl?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  referralCode?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  invitedBy?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  invitationAcceptedAt?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  invitationSentAt?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  invitationStatus?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  emailVerifiedAt?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  deletedAt?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  deletedBy?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  lastPasswordChangeAt?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  lastPasswordChangeBy?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  lastStatusChangeAt?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  lastStatusChangeBy?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  lastProductRoleChangeAt?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  lastProductRoleChangeBy?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  lastEmailChangeAt?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  lastEmailChangeBy?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  lastPhoneChangeAt?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  lastPhoneChangeBy?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  lastAvatarChangeAt?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  lastAvatarChangeBy?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  lastReferralCodeChangeAt?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  lastReferralCodeChangeBy?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  lastInvitedByChangeAt?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  lastInvitedByChangeBy?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  lastInvitationStatusChangeAt?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  lastInvitationStatusChangeBy?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  lastEmailVerifiedAtChangeAt?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  lastEmailVerifiedAtChangeBy?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  lastDeletedAtChangeAt?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  lastDeletedAtChangeBy?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  lastDeletedByChangeAt?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  lastDeletedByChangeBy?: string;
+  accountVerifiedAt?: string;
 }
 
 export class CreateInternalUserDto extends CreateUserDto {
@@ -788,30 +590,37 @@ export class CreateInternalUserDto extends CreateUserDto {
   @IsEnum(AdminRoleEnum)
   adminRole?: AdminRoleEnum;
 
-  @ApiPropertyOptional({ type: [String], enum: PermissionEnum })
+  @ApiPropertyOptional({ type: [String], enum: AdminPermissionEnum })
   @IsOptional()
   @IsArray()
-  @IsEnum(PermissionEnum, { each: true })
-  permissions?: PermissionEnum[];
+  @IsEnum(AdminPermissionEnum, { each: true })
+  adminPermissions?: AdminPermissionEnum[];
+
+  @ApiPropertyOptional({ type: [String], enum: AdminPermissionEnum })
+  @IsOptional()
+  @IsArray()
+  @IsEnum(AdminPermissionEnum, { each: true })
+  permissions?: AdminPermissionEnum[];
 
   @ApiPropertyOptional({ default: true })
   @IsOptional()
   @IsBoolean()
   isInternal?: boolean;
-
-  // Internal users may also have all optional fields from UserInterface (already inherited)
 }
 
 export {
   AvailabilityInputDto,
+  AddressInputDto,
   CandidateProfileInputDto,
-  CertificationInputDto,
-  ContactsInputDto,
+  CompanyDocumentsInputDto,
   CreateUserDto as CreateUserDTO,
-  DemographicsInputDto,
+  DiversityInputDto,
   DocumentsInputDto,
   EducationInputDto,
+  EthnicityInputDto,
+  ExperienceInputDto,
   LocationPreferencesInputDto,
+  PhoneInputDto,
   PhysicalProfileInputDto,
   ProfessionalMediaInputDto,
   ProfessionalProfileInputDto,

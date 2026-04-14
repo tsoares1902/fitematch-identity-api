@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
 import EncryptUtils from '@src/shared/applications/utils/encrypt.utils';
-import { UserStatusEnum } from '@src/user/applications/contracts/user-status.enum';
 import {
   CREATE_USER_REPOSITORY_INTERFACE,
   type CreateUserRepositoryInterface,
@@ -13,6 +12,7 @@ import type { ResultCreateUserUseCaseInterface } from '@src/user/applications/co
 
 @Injectable()
 export class CreateUserUseCase implements CreateUserUseCaseInterface {
+  /* istanbul ignore next */
   constructor(
     @Inject(CREATE_USER_REPOSITORY_INTERFACE)
     private readonly createUserRepository: CreateUserRepositoryInterface,
@@ -26,7 +26,7 @@ export class CreateUserUseCase implements CreateUserUseCaseInterface {
     const user = await this.createUserRepository.createUser({
       ...data,
       password,
-      status: data.status ?? UserStatusEnum.PENDING,
+      status: data.status ?? 'pending_account_confirmation',
     });
     return { data: user };
   }

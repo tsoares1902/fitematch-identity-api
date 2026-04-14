@@ -13,8 +13,11 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CurrentUser } from '@src/auth/adapters/decorators/current-user.decorator';
+import { ProductPermissions } from '@src/auth/adapters/decorators/product-permissions.decorator';
 import { JwtAuthGuard } from '@src/auth/adapters/guards/jwt-auth.guard';
+import { ProductPermissionsGuard } from '@src/auth/adapters/guards/product-permissions.guard';
 import type { AuthenticatedUser } from '@src/auth/adapters/security/authenticated-user.interface';
+import { ProductPermissionEnum } from '@src/user/domains/entities/user.entity';
 import {
   READ_USER_USE_CASE_INTERFACE,
   type ReadUserUseCaseInterface,
@@ -25,7 +28,7 @@ import { userInterfaceToPublicDto } from '@src/user/adapters/mappers/user-public
 @ApiTags('Auth')
 @Controller('auth')
 @ApiBearerAuth('JWT')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, ProductPermissionsGuard)
 export class MeController {
   constructor(
     @Inject(READ_USER_USE_CASE_INTERFACE)
@@ -43,6 +46,7 @@ export class MeController {
   @ApiNotFoundResponse({
     description: 'User not found!',
   })
+  @ProductPermissions(ProductPermissionEnum.VIEW_OWN_USER)
   @Get('me')
   async handle(
     @CurrentUser() user?: AuthenticatedUser,

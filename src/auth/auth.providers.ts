@@ -22,15 +22,18 @@ import { JwtStrategy } from '@src/auth/adapters/security/jwt.strategy';
 import { JwtAuthGuard } from '@src/auth/adapters/guards/jwt-auth.guard';
 import { RolesGuard } from '@src/auth/adapters/guards/roles.guard';
 import { PermissionsGuard } from '@src/auth/adapters/guards/permissions.guard';
+import { ProductPermissionsGuard } from '@src/auth/adapters/guards/product-permissions.guard';
 import { ForgotPasswordUseCase } from '@src/auth/applications/use-cases/forgot-password.use-case';
 import { LoginUseCase } from '@src/auth/applications/use-cases/login.use-case';
 import { ListSessionsUseCase } from '@src/auth/applications/use-cases/list-sessions.use-case';
+import { UpdateMeUseCase } from '@src/auth/applications/use-cases/update-me.use-case';
 import { LOGOUT_USE_CASE } from '@src/auth/applications/contracts/logout.use-case-interface';
 import { LogoutUseCase } from '@src/auth/applications/use-cases/logout.use-case';
 import { FORGOT_PASSWORD_USE_CASE } from '@src/auth/applications/contracts/forgot-password.use-case-interface';
 import { RESET_PASSWORD_USE_CASE } from '@src/auth/applications/contracts/reset-password.use-case-interface';
 import { VERIFY_EMAIL_USE_CASE } from '@src/auth/applications/contracts/verify-email.use-case-interface';
 import { RESEND_VERIFICATION_EMAIL_USE_CASE } from '@src/auth/applications/contracts/resend-verification-email.use-case-interface';
+import { UPDATE_ME_USE_CASE } from '@src/auth/applications/contracts/update-me.use-case-interface';
 import { ResetPasswordUseCase } from '@src/auth/applications/use-cases/reset-password.use-case';
 import { VerifyEmailUseCase } from '@src/auth/applications/use-cases/verify-email.use-case';
 import { ResendVerificationEmailUseCase } from '@src/auth/applications/use-cases/resend-verification-email.use-case';
@@ -46,6 +49,7 @@ export const authProviders = [
   JwtAuthGuard,
   RolesGuard,
   PermissionsGuard,
+  ProductPermissionsGuard,
   BcryptPasswordVerifier,
   {
     provide: LIST_SESSIONS_REPOSITORY,
@@ -98,6 +102,10 @@ export const authProviders = [
   {
     provide: LOGIN_USE_CASE,
     useClass: LoginUseCase,
+  },
+  {
+    provide: UPDATE_ME_USE_CASE,
+    useClass: UpdateMeUseCase,
   },
   {
     provide: FORGOT_PASSWORD_USE_CASE,

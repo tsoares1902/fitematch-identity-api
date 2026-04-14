@@ -48,7 +48,7 @@ export class UpdateUserController {
     summary: 'Update user',
     description: 'Updates an existing user by its identifier.',
   })
-  @Roles(AdminRoleEnum.STAFF, AdminRoleEnum.ADMIN, AdminRoleEnum.SUPER_ADMIN)
+  @Roles(AdminRoleEnum.ADMIN, AdminRoleEnum.SUPER_ADMIN)
   @Permissions(PermissionEnum.EDIT_USERS)
   @ApiParam({ name: 'id', description: 'User identifier.' })
   @ApiBody({ type: UpdateUserDto })

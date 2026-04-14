@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ListUsersUseCase } from '@src/user/applications/use-cases/list-users.use-case';
 import {
+  ProductPermissionEnum,
   ProductRoleEnum,
   UserStatusEnum,
   type User,
@@ -63,9 +64,10 @@ describe('ListUsersUseCase', () => {
       birthday: '1990-01-01',
       status: UserStatusEnum.ACTIVE,
       productRole: ProductRoleEnum.CANDIDATE,
+      productPermissions: [ProductPermissionEnum.VIEW_OWN_USER],
       isInternal: false,
       candidateProfile: {
-        contacts: {
+        phone: {
           phone: '11987654321',
         },
       },
@@ -90,24 +92,18 @@ describe('ListUsersUseCase', () => {
           birthday: '1990-01-01',
           status: UserStatusEnum.ACTIVE,
           productRole: ProductRoleEnum.CANDIDATE,
+          productPermissions: [ProductPermissionEnum.VIEW_OWN_USER],
           adminRole: undefined,
+          adminPermissions: undefined,
           permissions: undefined,
           isInternal: false,
           candidateProfile: {
-            contacts: {
+            phone: {
               phone: '11987654321',
             },
           },
           recruiterProfile: undefined,
-          emailVerifiedAt: undefined,
-          createdBy: undefined,
-          lastLoginAt: undefined,
-          suspendedAt: undefined,
-          suspendedReason: undefined,
-          deactivatedAt: undefined,
-          deactivatedReason: undefined,
-          bannedAt: undefined,
-          bannedReason: undefined,
+          accountVerifiedAt: undefined,
           createdAt,
           updatedAt,
         },
@@ -120,7 +116,7 @@ describe('ListUsersUseCase', () => {
     });
   });
 
-  it('should expose the private mapper through the current use case implementation', () => {
+  it('should expose the current private mapper implementation', () => {
     const createdAt = new Date('2024-01-01T00:00:00.000Z');
     const updatedAt = new Date('2024-01-02T00:00:00.000Z');
     const user: User = {
@@ -128,6 +124,7 @@ describe('ListUsersUseCase', () => {
       firstName: 'John',
       lastName: 'Doe',
       email: 'john@example.com',
+      birthday: '1990-01-01',
       status: UserStatusEnum.ACTIVE,
       createdAt,
       updatedAt,
@@ -142,23 +139,17 @@ describe('ListUsersUseCase', () => {
       firstName: 'John',
       lastName: 'Doe',
       email: 'john@example.com',
-      birthday: undefined,
+      birthday: '1990-01-01',
       status: UserStatusEnum.ACTIVE,
       productRole: undefined,
+      productPermissions: undefined,
       adminRole: undefined,
+      adminPermissions: undefined,
       permissions: undefined,
       isInternal: undefined,
       candidateProfile: undefined,
       recruiterProfile: undefined,
-      emailVerifiedAt: undefined,
-      createdBy: undefined,
-      lastLoginAt: undefined,
-      suspendedAt: undefined,
-      suspendedReason: undefined,
-      deactivatedAt: undefined,
-      deactivatedReason: undefined,
-      bannedAt: undefined,
-      bannedReason: undefined,
+      accountVerifiedAt: undefined,
       createdAt,
       updatedAt,
     });

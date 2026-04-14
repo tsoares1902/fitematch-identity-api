@@ -15,7 +15,13 @@ import {
 import { LoginUseCase } from '@src/auth/applications/use-cases/login.use-case';
 import { InvalidCredentialsError } from '@src/auth/applications/errors/invalid-credentials.error';
 import { AuthenticationForbiddenError } from '@src/auth/applications/errors/authentication-forbidden.error';
-import { UserStatusEnum } from '@src/user/domains/entities/user.entity';
+import {
+  AdminRoleEnum,
+  AdminPermissionEnum,
+  ProductPermissionEnum,
+  ProductRoleEnum,
+  UserStatusEnum,
+} from '@src/user/domains/entities/user.entity';
 
 describe('LoginUseCase', () => {
   let useCase: LoginUseCase;
@@ -81,17 +87,17 @@ describe('LoginUseCase', () => {
       ).rejects.toThrow(InvalidCredentialsError);
     });
 
-    it('should block login for pending email verification', async () => {
+    it('should block login for pending account confirmation', async () => {
       authenticationRepositoryMock.findIdentityByEmail.mockResolvedValue(
         buildIdentity({
-          user: { status: UserStatusEnum.PENDING_EMAIL_VERIFICATION },
+          user: { status: UserStatusEnum.PENDING_ACCOUNT_CONFIRMATION },
         }),
       );
       passwordVerifierMock.verify.mockResolvedValue(true);
 
       await expect(
         useCase.execute({ email: 'john@example.com', password: 'secret' }),
-      ).rejects.toThrow(AuthenticationForbiddenError);
+      ).rejects.toThrow('Email verification pending!');
     });
 
     it('should block login for suspended users', async () => {
@@ -104,7 +110,7 @@ describe('LoginUseCase', () => {
 
       await expect(
         useCase.execute({ email: 'john@example.com', password: 'secret' }),
-      ).rejects.toThrow('user account is suspended');
+      ).rejects.toThrow('User account is suspended!');
     });
 
     it('should block login for deactivated users', async () => {
@@ -117,7 +123,7 @@ describe('LoginUseCase', () => {
 
       await expect(
         useCase.execute({ email: 'john@example.com', password: 'secret' }),
-      ).rejects.toThrow('user account is deactivated');
+      ).rejects.toThrow('User account is deactivated!');
     });
 
     it('should block login for banned users', async () => {
@@ -130,7 +136,7 @@ describe('LoginUseCase', () => {
 
       await expect(
         useCase.execute({ email: 'john@example.com', password: 'secret' }),
-      ).rejects.toThrow('user account is banned');
+      ).rejects.toThrow('User account is banned');
     });
 
     it('should block login for unknown statuses', async () => {
@@ -148,7 +154,7 @@ describe('LoginUseCase', () => {
   });
 
   describe('session creation', () => {
-    it('should create a session and return the access token', async () => {
+    it('should create a product session and return the access token', async () => {
       authenticationRepositoryMock.findIdentityByEmail.mockResolvedValue(
         buildIdentity(),
       );
@@ -170,34 +176,45 @@ describe('LoginUseCase', () => {
           lastName: 'Doe',
           email: 'john@example.com',
           status: UserStatusEnum.ACTIVE,
-          productRole: 'candidate',
+          productRole: ProductRoleEnum.CANDIDATE,
+          productPermissions: [ProductPermissionEnum.VIEW_OWN_USER],
           adminRole: undefined,
+          adminPermissions: undefined,
           permissions: undefined,
           isInternal: false,
         },
       });
 
       expect(
-        authenticationRepositoryMock.createSession.mock.calls,
-      ).toHaveLength(1);
+        authenticationRepositoryMock.createSession.mock.calls[0]?.[0],
+      ).toEqual({
+        userId: 'user-id',
+        sessionId: expect.any(String),
+        client: { browser: 'Chrome' },
+        active: true,
+        createdAt: expect.any(Date),
+        startedAt: expect.any(Date),
+      });
       expect(accessTokenIssuerMock.issue.mock.calls[0]?.[0]).toEqual({
         sub: 'user-id',
         sid: expect.any(String),
         ver: 1,
         typ: 'product',
-        pr: 'candidate',
+        pr: ProductRoleEnum.CANDIDATE,
+        pperm: [ProductPermissionEnum.VIEW_OWN_USER],
         ar: undefined,
+        aperm: undefined,
         perm: undefined,
       });
     });
 
-    it('should issue an internal token for internal users', async () => {
+    it('should issue an internal token using admin permissions fallback', async () => {
       authenticationRepositoryMock.findIdentityByEmail.mockResolvedValue(
         buildIdentity({
           user: {
             isInternal: true,
-            adminRole: 'admin' as never,
-            permissions: ['view_users'] as never,
+            adminRole: AdminRoleEnum.ADMIN,
+            permissions: [AdminPermissionEnum.VIEW_USERS],
           },
         }),
       );
@@ -215,9 +232,51 @@ describe('LoginUseCase', () => {
         sid: expect.any(String),
         ver: 1,
         typ: 'internal',
-        pr: 'candidate',
-        ar: 'admin',
-        perm: ['view_users'],
+        pr: ProductRoleEnum.CANDIDATE,
+        pperm: [ProductPermissionEnum.VIEW_OWN_USER],
+        ar: AdminRoleEnum.ADMIN,
+        aperm: [AdminPermissionEnum.VIEW_USERS],
+        perm: [AdminPermissionEnum.VIEW_USERS],
+      });
+    });
+
+    it('should prefer adminPermissions over legacy permissions', async () => {
+      authenticationRepositoryMock.findIdentityByEmail.mockResolvedValue(
+        buildIdentity({
+          user: {
+            isInternal: true,
+            adminRole: AdminRoleEnum.ADMIN,
+            adminPermissions: [AdminPermissionEnum.EDIT_USERS],
+            permissions: [AdminPermissionEnum.VIEW_USERS],
+          },
+        }),
+      );
+      passwordVerifierMock.verify.mockResolvedValue(true);
+      authenticationRepositoryMock.createSession.mockResolvedValue();
+      accessTokenIssuerMock.issue.mockResolvedValue('token');
+
+      await expect(
+        useCase.execute({
+          email: 'john@example.com',
+          password: 'secret',
+        }),
+      ).resolves.toMatchObject({
+        user: {
+          adminPermissions: [AdminPermissionEnum.EDIT_USERS],
+          permissions: [AdminPermissionEnum.EDIT_USERS],
+        },
+      });
+
+      expect(accessTokenIssuerMock.issue.mock.calls[0]?.[0]).toEqual({
+        sub: 'user-id',
+        sid: expect.any(String),
+        ver: 1,
+        typ: 'internal',
+        pr: ProductRoleEnum.CANDIDATE,
+        pperm: [ProductPermissionEnum.VIEW_OWN_USER],
+        ar: AdminRoleEnum.ADMIN,
+        aperm: [AdminPermissionEnum.EDIT_USERS],
+        perm: [AdminPermissionEnum.EDIT_USERS],
       });
     });
   });
@@ -233,7 +292,8 @@ function buildIdentity(
       lastName: 'Doe',
       email: 'john@example.com',
       status: UserStatusEnum.ACTIVE,
-      productRole: 'candidate',
+      productRole: ProductRoleEnum.CANDIDATE,
+      productPermissions: [ProductPermissionEnum.VIEW_OWN_USER],
       isInternal: false,
     },
     passwordHash: 'hashed',
@@ -245,7 +305,8 @@ function buildIdentity(
       lastName: 'Doe',
       email: 'john@example.com',
       status: UserStatusEnum.ACTIVE,
-      productRole: 'candidate',
+      productRole: ProductRoleEnum.CANDIDATE,
+      productPermissions: [ProductPermissionEnum.VIEW_OWN_USER],
       isInternal: false,
       ...overrides?.user,
     },

@@ -1,6 +1,7 @@
 import type {
+  AdminPermissionEnum,
   AdminRoleEnum,
-  PermissionEnum,
+  ProductPermissionEnum,
   ProductRoleEnum,
 } from '@src/user/domains/entities/user.entity';
 
@@ -14,8 +15,10 @@ export interface AccessTokenPayload {
   ver: number;
   typ: AccessTokenType;
   pr?: ProductRoleEnum;
+  pperm?: ProductPermissionEnum[];
   ar?: AdminRoleEnum;
-  perm?: PermissionEnum[];
+  aperm?: AdminPermissionEnum[];
+  perm?: AdminPermissionEnum[];
 }
 
 export interface AccessTokenIssuer {

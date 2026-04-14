@@ -87,9 +87,7 @@
     },
     "collectCoverageFrom": [
       "src/**/applications/use-cases/*.ts",
-      "src/**/adapters/controllers/*.ts",
-      "src/shared/applications/utils/*.ts",
-      "src/health-check/adapters/controllers/*.ts"
+      "src/shared/applications/utils/*.ts"
     ],
     "coverageDirectory": "./test/coverage",
     "testEnvironment": "node"

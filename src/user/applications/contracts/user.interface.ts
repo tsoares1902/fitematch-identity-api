@@ -1,4 +1,23 @@
-export interface DocumentsInterface {
+export enum UserStatusEnum {
+  PENDING_ACCOUNT_CONFIRMATION = 'pending_account_confirmation',
+  ACTIVE = 'active',
+  SUSPENDED = 'suspended',
+  DEACTIVATED = 'deactivated',
+  BANNED = 'banned',
+}
+
+export enum ProductRoleEnum {
+  CANDIDATE = 'candidate',
+  RECRUITER = 'recruiter',
+}
+
+export enum AdminRoleEnum {
+  STAFF = 'staff',
+  ADMIN = 'admin',
+  SUPER_ADMIN = 'super_admin',
+}
+
+export interface PersonDocumentsInterface {
   identityDocumentNumber?: string;
   identityIssuer?: string;
   identityState?: string;
@@ -10,10 +29,17 @@ export interface DocumentsInterface {
   crefState?: string;
 }
 
-export interface ContactsInterface {
+export interface CompanyDocumentsInterface {
+  socialDocumentNumber?: string;
+}
+
+export interface PhoneInterface {
   phone?: string;
   isWhatsapp?: boolean;
   isTelegram?: boolean;
+}
+
+export interface AddressInterface {
   street?: string;
   number?: string;
   complement?: string;
@@ -31,8 +57,11 @@ export interface SocialInterface {
   website?: string;
 }
 
-export interface DemographicsInterface {
+export interface EthnicityInterface {
   ethnicity?: string;
+}
+
+export interface DiversityInterface {
   sexualOrientation?: string;
   genderIdentity?: string;
 }
@@ -70,11 +99,13 @@ export interface EducationInterface {
   isCurrentlyStudying?: boolean;
 }
 
-export interface CertificationInterface {
-  name: string;
-  issuer?: string;
-  issueDate?: string;
-  expirationDate?: string;
+export interface ExperienceInterface {
+  companyName?: string;
+  position?: string;
+  startDate?: string;
+  endDate?: string;
+  isCurrent?: boolean;
+  description?: string;
 }
 
 export interface AvailabilityInterface {
@@ -92,30 +123,30 @@ export interface LocationPreferencesInterface {
 export interface ProfessionalMediaInterface {
   profilePictureUrl?: string;
   resumeUrl?: string;
-  videoUrl?: string;
 }
 
 export interface CandidateProfileInterface {
-  documents?: DocumentsInterface;
-  contacts?: ContactsInterface;
+  documents?: PersonDocumentsInterface;
+  phone?: PhoneInterface;
+  address?: AddressInterface;
   social?: SocialInterface;
-  demographics?: DemographicsInterface;
+  ethnicity?: EthnicityInterface;
+  diversity?: DiversityInterface;
   physicalProfile?: PhysicalProfileInterface;
   uniformSizes?: UniformSizesInterface;
   professionalProfile?: ProfessionalProfileInterface;
   educations?: EducationInterface[];
-  certifications?: CertificationInterface[];
+  experiences?: ExperienceInterface[];
   availability?: AvailabilityInterface;
   locationPreferences?: LocationPreferencesInterface;
   professionalMedia?: ProfessionalMediaInterface;
 }
 
 export interface RecruiterProfileInterface {
-  companyName?: string;
-  companyDocument?: string;
   position?: string;
-  phone?: string;
-  website?: string;
+  documents?: CompanyDocumentsInterface;
+  phone?: PhoneInterface;
+  address?: AddressInterface;
 }
 
 export interface UserInterface {
@@ -123,23 +154,17 @@ export interface UserInterface {
   firstName: string;
   lastName: string;
   email: string;
-  birthday?: string;
+  birthday: string;
   status: string;
   productRole?: string;
+  productPermissions?: string[];
   adminRole?: string;
+  adminPermissions?: string[];
   permissions?: string[];
   isInternal?: boolean;
   candidateProfile?: CandidateProfileInterface;
   recruiterProfile?: RecruiterProfileInterface;
-  emailVerifiedAt?: string;
-  createdBy?: string;
-  lastLoginAt?: string;
-  suspendedAt?: string;
-  suspendedReason?: string;
-  deactivatedAt?: string;
-  deactivatedReason?: string;
-  bannedAt?: string;
-  bannedReason?: string;
+  accountVerifiedAt?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }

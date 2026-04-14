@@ -70,8 +70,10 @@ export class LoginUseCase implements LoginUseCaseInterface {
       ver: identity.tokenVersion,
       typ: this.resolveTokenType(identity.user.isInternal),
       pr: identity.user.productRole,
+      pperm: identity.user.productPermissions,
       ar: identity.user.adminRole,
-      perm: identity.user.permissions,
+      aperm: identity.user.adminPermissions ?? identity.user.permissions,
+      perm: identity.user.adminPermissions ?? identity.user.permissions,
     });
 
     return {
@@ -83,8 +85,12 @@ export class LoginUseCase implements LoginUseCaseInterface {
         email: identity.user.email,
         status: identity.user.status,
         productRole: identity.user.productRole,
+        productPermissions: identity.user.productPermissions,
         adminRole: identity.user.adminRole,
-        permissions: identity.user.permissions,
+        adminPermissions:
+          identity.user.adminPermissions ?? identity.user.permissions,
+        permissions:
+          identity.user.adminPermissions ?? identity.user.permissions,
         isInternal: identity.user.isInternal,
       },
     };
@@ -96,14 +102,14 @@ export class LoginUseCase implements LoginUseCaseInterface {
     }
 
     switch (status) {
-      case UserStatusEnum.PENDING_EMAIL_VERIFICATION:
-        throw new AuthenticationForbiddenError('email verification pending');
+      case UserStatusEnum.PENDING_ACCOUNT_CONFIRMATION:
+        throw new AuthenticationForbiddenError('Email verification pending!');
       case UserStatusEnum.SUSPENDED:
-        throw new AuthenticationForbiddenError('user account is suspended');
+        throw new AuthenticationForbiddenError('User account is suspended!');
       case UserStatusEnum.DEACTIVATED:
-        throw new AuthenticationForbiddenError('user account is deactivated');
+        throw new AuthenticationForbiddenError('User account is deactivated!');
       case UserStatusEnum.BANNED:
-        throw new AuthenticationForbiddenError('user account is banned');
+        throw new AuthenticationForbiddenError('User account is banned');
       default:
         throw new AuthenticationForbiddenError();
     }

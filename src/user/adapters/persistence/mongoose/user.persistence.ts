@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import {
+  AdminPermissionEnum,
   AdminRoleEnum,
-  PermissionEnum,
+  ProductPermissionEnum,
   ProductRoleEnum,
   UserStatusEnum,
 } from '@src/user/domains/entities/user.entity';
@@ -26,16 +27,16 @@ export class UserPersistenceModel {
   @Prop({ required: true, trim: true })
   lastName!: string;
 
-  @Prop({ required: false })
-  birthday?: string;
+  @Prop({ required: true })
+  birthday!: string;
 
   @Prop({
     required: true,
     enum: UserStatusEnum,
     type: String,
-    default: UserStatusEnum.PENDING_EMAIL_VERIFICATION,
+    default: 'pending_account_confirmation',
   })
-  status!: UserStatusEnum;
+  status!: string;
 
   @Prop({
     required: false,
@@ -54,11 +55,26 @@ export class UserPersistenceModel {
   @Prop({
     required: false,
     type: [String],
-    enum: PermissionEnum,
+    enum: ProductPermissionEnum,
     default: undefined,
   })
-  permissions?: PermissionEnum[];
+  productPermissions?: ProductPermissionEnum[];
 
+  @Prop({
+    required: false,
+    type: [String],
+    enum: AdminPermissionEnum,
+    default: undefined,
+  })
+  adminPermissions?: AdminPermissionEnum[];
+
+  @Prop({
+    required: false,
+    type: [String],
+    enum: AdminPermissionEnum,
+    default: undefined,
+  })
+  permissions?: AdminPermissionEnum[];
   @Prop({ required: false, default: false })
   isInternal?: boolean;
 

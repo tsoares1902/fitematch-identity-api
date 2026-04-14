@@ -23,8 +23,10 @@ export function toDomainUser(document: UserPersistenceDocument): User {
     birthday: document.birthday,
     status: document.status,
     productRole: document.productRole,
+    productPermissions: document.productPermissions,
     adminRole: document.adminRole,
-    permissions: document.permissions,
+    adminPermissions: document.adminPermissions ?? document.permissions,
+    permissions: document.adminPermissions ?? document.permissions,
     isInternal: document.isInternal,
     candidateProfile: document.candidateProfile
       ? {

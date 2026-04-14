@@ -13,7 +13,9 @@ export interface UpdateUserDataUseCaseInterface {
   birthday?: string;
   status?: string;
   productRole?: string;
+  productPermissions?: string[];
   adminRole?: string;
+  adminPermissions?: string[];
   permissions?: string[];
   isInternal?: boolean;
   candidateProfile?: CandidateProfileInterface;

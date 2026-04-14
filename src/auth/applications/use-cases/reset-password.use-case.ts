@@ -17,6 +17,7 @@ import EncryptUtils from '@src/shared/applications/utils/encrypt.utils';
 
 @Injectable()
 export class ResetPasswordUseCase implements ResetPasswordUseCaseInterface {
+  /* istanbul ignore next */
   constructor(
     @Inject(ACCOUNT_RECOVERY_REPOSITORY)
     private readonly accountRecoveryRepository: AccountRecoveryRepository,

@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CREATE_USER_REPOSITORY_INTERFACE } from '@src/user/applications/contracts/create-user.repository-interface';
-import { UserStatusEnum } from '@src/user/applications/contracts/user-status.enum';
 import { CreateUserUseCase } from '@src/user/applications/use-cases/create-user.use-case';
 import EncryptUtils from '@src/shared/applications/utils/encrypt.utils';
+import { UserStatusEnum } from '@src/user/domains/entities/user.entity';
 
 describe('CreateUserUseCase', () => {
   let useCase: CreateUserUseCase;
@@ -39,9 +39,9 @@ describe('CreateUserUseCase', () => {
     expect(useCase).toBeDefined();
   });
 
-  it('should encrypt the password and apply default values before persisting', async () => {
+  it('should encrypt the password and apply the default status before persisting', async () => {
     const data = {
-      role: 'candidate',
+      productRole: 'candidate',
       firstName: 'John',
       lastName: 'Doe',
       email: 'john@example.com',
@@ -60,18 +60,19 @@ describe('CreateUserUseCase', () => {
     expect(createUserRepositoryMock.createUser).toHaveBeenCalledWith({
       ...data,
       password: 'hashed-password',
-      status: UserStatusEnum.PENDING,
+      status: UserStatusEnum.PENDING_ACCOUNT_CONFIRMATION,
     });
   });
 
   it('should preserve the provided status', async () => {
     const data = {
-      role: 'candidate',
+      productRole: 'candidate',
       firstName: 'John',
       lastName: 'Doe',
       email: 'john@example.com',
       password: 'secret',
-      status: UserStatusEnum.ENABLED,
+      birthday: '1990-01-01',
+      status: UserStatusEnum.ACTIVE,
     };
 
     encryptUtilsMock.encryptPassword.mockResolvedValue('hashed-password');
@@ -86,7 +87,7 @@ describe('CreateUserUseCase', () => {
     expect(createUserRepositoryMock.createUser).toHaveBeenCalledWith({
       ...data,
       password: 'hashed-password',
-      status: UserStatusEnum.ENABLED,
+      status: UserStatusEnum.ACTIVE,
     });
   });
 });

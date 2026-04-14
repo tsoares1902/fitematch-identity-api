@@ -12,8 +12,9 @@ import {
   ValidateNested,
 } from 'class-validator';
 import {
+  AdminPermissionEnum,
   AdminRoleEnum,
-  PermissionEnum,
+  ProductPermissionEnum,
   ProductRoleEnum,
   UserStatusEnum,
 } from '@src/user/domains/entities/user.entity';
@@ -59,16 +60,28 @@ export class UpdateUserDto {
   @IsEnum(ProductRoleEnum)
   productRole?: ProductRoleEnum;
 
+  @ApiPropertyOptional({ type: [String], enum: ProductPermissionEnum })
+  @IsOptional()
+  @IsArray()
+  @IsEnum(ProductPermissionEnum, { each: true })
+  productPermissions?: ProductPermissionEnum[];
+
   @ApiPropertyOptional({ example: AdminRoleEnum.ADMIN, enum: AdminRoleEnum })
   @IsOptional()
   @IsEnum(AdminRoleEnum)
   adminRole?: AdminRoleEnum;
 
-  @ApiPropertyOptional({ type: [String], enum: PermissionEnum })
+  @ApiPropertyOptional({ type: [String], enum: AdminPermissionEnum })
   @IsOptional()
   @IsArray()
-  @IsEnum(PermissionEnum, { each: true })
-  permissions?: PermissionEnum[];
+  @IsEnum(AdminPermissionEnum, { each: true })
+  adminPermissions?: AdminPermissionEnum[];
+
+  @ApiPropertyOptional({ type: [String], enum: AdminPermissionEnum })
+  @IsOptional()
+  @IsArray()
+  @IsEnum(AdminPermissionEnum, { each: true })
+  permissions?: AdminPermissionEnum[];
 
   @ApiPropertyOptional()
   @IsOptional()
