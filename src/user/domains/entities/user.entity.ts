@@ -333,13 +333,6 @@ export interface ExperienceEntity {
   description?: string;
 }
 
-export interface CertificationEntity {
-  name: string;
-  issuer?: string;
-  issueDate?: string;
-  expirationDate?: string;
-}
-
 export interface AvailabilityEntity {
   availableDays?: string[];
   availableShifts?: string[];

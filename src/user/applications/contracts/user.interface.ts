@@ -51,7 +51,10 @@ export interface AddressInterface {
 }
 
 export interface SocialInterface {
+  facebook?: string;
   instagram?: string;
+  x: string;
+  tiktok: string;
   linkedin?: string;
   youtube?: string;
   website?: string;
