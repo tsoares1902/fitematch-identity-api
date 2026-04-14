@@ -45,6 +45,38 @@ src/
 
 ---
 
+## Branch Strategy
+
+- `main`: production
+- `develop`: integration
+- `feature/*`: new features
+
+Flow:
+
+- `feature/*` -> `develop` via Pull Request
+- `develop` -> `main` via Pull Request
+
+---
+
+## CI
+
+The project uses a single GitHub Actions workflow at `.github/workflows/ci.yml`.
+
+It runs on:
+
+- push to `feature/*`
+- pull requests targeting `develop`
+- pull requests targeting `main`
+
+The workflow executes:
+
+- `npm ci`
+- `npm run lint:check`
+- `npm run test`
+- `npm run build`
+
+---
+
 ## Authentication
 
 Authentication is implemented using **JWT (JSON Web Tokens)**.
