@@ -15,7 +15,7 @@ import {
   LIST_USER_USE_CASE_INTERFACE,
   type ListUserUseCaseInterface,
 } from '@src/user/applications/contracts/list-user.use-case-interface';
-import { ResponseListUsersDTO } from '../dto/responses/list-user-response.dto';
+import { ResponseListUsersDTO } from '@src/user/adapters/dto/responses/list-user-response.dto';
 import {
   AdminRoleEnum,
   PermissionEnum,

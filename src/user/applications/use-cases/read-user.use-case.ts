@@ -3,7 +3,7 @@ import type { ReadUserUseCaseInterface } from '@src/user/applications/contracts/
 import type {
   ReadUserOutputDto,
   ResultReadUserUseCaseInterface,
-} from '../contracts/result-read-user.use-case.interface';
+} from '@src/user/applications/contracts/result-read-user.use-case.interface';
 import {
   USER_QUERY_REPOSITORY,
   type UserQueryRepository,
